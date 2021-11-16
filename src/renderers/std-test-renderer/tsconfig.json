@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "noEmit": true,
+        "target": "ES2019",
+        "rootDir": "../../",
+        "module": "esnext",
+        "lib": ["ES2019", "dom"],
+        "types": ["webpack-env", "vscode-notebook-renderer"],
+        "sourceMap": true,
+        "strict": true
+    }
+}
