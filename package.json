@@ -90,6 +90,23 @@
           "text/plain"
         ]
       }
+    ],
+    "menus": {
+      "notebook/cell/title": [
+        {
+          "command": "cell.editMetadata",
+          "group": "inline/output@1",
+          "when": "notebookCellType == code"
+        }
+      ]
+    },
+    "commands": [
+      {
+				"title": "Edit cell metadata",
+        "shortTitle": "Cell metadata",
+				"command": "cell.editMetadata",
+        "icon": "$(globe)"
+			}
     ]
   },
   "scripts": {
@@ -123,5 +140,8 @@
     "vscode-test": "^1.5.2",
     "webpack": "^5.38.1",
     "webpack-cli": "^4.7.0"
+  },
+  "dependencies": {
+    "@vscode/webview-ui-toolkit": "^0.8.4"
   }
 }

@@ -1,15 +1,22 @@
 import * as vscode from 'vscode';
+import { CommandManager } from './commands/command-handler';
+import { EditCellMetadataCmd } from './commands/edit-cell-metadata.command';
 import { GoPlaygroundController } from './controllers/go-playground.controller';
 import { NotebookManager } from './core/manager';
 import { NotebookSerializer } from './core/serializer';
 
 let notebookManager: NotebookManager;
+let cmdManager: CommandManager;
 const defaultSerializableNotebookTypes: string[] = [
     'golangbook',
 ];
 
 export function activate(context: vscode.ExtensionContext) {
     notebookManager = new NotebookManager(context);
+    cmdManager = new CommandManager(context);
+
+    // register extension command handlers.
+    registerCommandHandlers(cmdManager);
 
     // register notebook serializers.
     registerNotebookSerializers(notebookManager);
@@ -20,6 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() {
     notebookManager.dispose();
+    cmdManager.dispose();
 }
 
 function registerNotebookSerializers(m: NotebookManager) {
@@ -36,4 +44,8 @@ function registerNotebookControllers(m: NotebookManager) {
     m.registerNotebookController(new GoPlaygroundController());
 
     // INFO: register your custom controller here... 
+}
+
+function registerCommandHandlers(m: CommandManager) {
+    m.registerCommandHandler('cell.editMetadata', new EditCellMetadataCmd());
 }
