@@ -8,7 +8,7 @@ class StdErrorRenderer extends NotebookRenderer {
 
     public renderOutputItem(data: OutputItem, element: HTMLElement): void {
         const err = data.json() as Error;
-        element.innerText = `${err.name}:\n\n${err.message}\nStack:\n\n${err.stack}`;
+        element.innerText = `${err.name}:\n\n${err.message}`;
         element.classList.add(style.error);
     }
 }

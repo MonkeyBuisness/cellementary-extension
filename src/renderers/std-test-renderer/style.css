@@ -6,22 +6,22 @@
 .fail {
     color: var(--vscode-notebookStatusErrorIcon-foreground);
     font-size: var(--vscode-font-size);
+    width: 80px;
 }
 
 .pass {
     color: var(--vscode-notebookStatusSuccessIcon-foreground);
     font-size: var(--vscode-font-size);
+    width: 80px;
 }
 
 .check {
     display: flex;
-    justify-content: space-between;
-    width: 360px;
     margin: 6px 0;
 }
 
 .testName {
-    width: 150px;
+    width: 240px;
     overflow: hidden;
     text-overflow: ellipsis;
 }
