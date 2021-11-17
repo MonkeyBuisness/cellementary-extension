@@ -1,4 +1,36 @@
-.error {
+.failedNumber {
     font-size: var(--vscode-font-size);
-    color: var(--vscode-errorForeground);
+    font-weight: 900;
+}
+
+.fail {
+    color: var(--vscode-notebookStatusErrorIcon-foreground);
+    font-size: var(--vscode-font-size);
+}
+
+.pass {
+    color: var(--vscode-notebookStatusSuccessIcon-foreground);
+    font-size: var(--vscode-font-size);
+}
+
+.check {
+    display: flex;
+    justify-content: space-between;
+    width: 360px;
+    margin: 6px 0;
+}
+
+.testName {
+    width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.testTime {
+    color: var(--vscode-testing-message\.info\.decorationForeground);
+}
+
+.testMsg {
+    text-decoration: underline;
+    cursor: help;
 }

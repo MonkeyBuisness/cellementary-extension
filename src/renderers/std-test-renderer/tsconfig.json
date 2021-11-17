@@ -4,7 +4,7 @@
         "target": "ES2019",
         "rootDir": "../../",
         "module": "esnext",
-        "lib": ["ES2019", "dom"],
+        "lib": ["ES2019", "DOM"],
         "types": ["webpack-env", "vscode-notebook-renderer"],
         "sourceMap": true,
         "strict": true

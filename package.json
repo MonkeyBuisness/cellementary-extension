@@ -46,7 +46,7 @@
     "type": "github",
     "url": "https://github.com/MonkeyBuisness/cellementary-extension"
   },
-  "homepage": "https://github.com/MonkeyBuisness/cellementary-extension/blob/main/README.md",
+  "homepage": "https://github.com/MonkeyBuisness/cellementary-extension/blob/master/README.md",
   "main": "./out/extension.js",
   "activationEvents": [
     "onNotebookEditor:golangbook",
@@ -80,6 +80,14 @@
         "displayName": "Standart test renderer",
         "mimeTypes": [
           "application/cellementary.test"
+        ]
+      },
+      {
+        "id": "std-text-renderer",
+        "entrypoint": "./out/renderers/std-text-renderer.js",
+        "displayName": "Standart text renderer",
+        "mimeTypes": [
+          "text/plain"
         ]
       }
     ]

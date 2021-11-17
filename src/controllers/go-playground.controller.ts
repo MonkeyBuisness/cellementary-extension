@@ -7,7 +7,8 @@ import {
     NotebookCellExecution,
     NotebookController
 } from '../core/controller';
-import { StdTestResult } from '../renderers/std-test-renderer/renderer';
+import { StdTestResult } from '../renderers/std-test-renderer/types';
+import { GoTestResolver } from './go.controller';
 
 const testMime: string = 'application/cellementary.test';
 
@@ -97,7 +98,7 @@ export class GoPlaygroundController extends NotebookController {
         const success = resp.Status === 0;
 
         if (resp.IsTest) {
-            GoPlaygroundController._resolveTestResponse(ex, resp.Events || []);
+            GoPlaygroundController._resolveTestResponse(ex, resp);
             return success;
         }
 
@@ -138,24 +139,15 @@ export class GoPlaygroundController extends NotebookController {
         return success;
     }
 
-    /*
-test response
-=== RUN   TestLastIndex
---- PASS: TestLastIndex (0.00s)
-=== RUN   TestSomething
-=== RUN   TestSomething/test_1
-=== RUN   TestSomething/test_1/kek
-=== RUN   TestSomething/test_2
-    prog.go:45: Test bla-bla
---- FAIL: TestSomething (0.00s)
-    --- PASS: TestSomething/test_1 (0.00s)
-        --- PASS: TestSomething/test_1/kek (0.00s)
-    --- FAIL: TestSomething/test_2 (0.00s)
-FAIL
-*/
     private static _resolveTestResponse(
-        ex: NotebookCellExecution, events: PlaygroundEvent[]) : void {
-        // TODO: implement
+        ex: NotebookCellExecution, resp: PlaygroundCompileResponse) : void {
+        const testMessages = resp.Events?.map(e => e.Message || '');
+        GoPlaygroundController._logTests(ex,
+            new GoTestResolver(
+                (testMessages || []).join('\n'),
+                resp.TestsFailed === 0,
+                resp.TestsFailed || 0
+            ).resolve());
     }
 
     private static _logResult(ex: NotebookCellExecution, result: string) : void {
@@ -176,9 +168,10 @@ FAIL
         ex.clearOutput();
     }
 
-    private static _logTests(ex: NotebookCellExecution, tests: StdTestResult[]) : void {
-        const items = tests.map(t => vscode.NotebookCellOutputItem.json(t, testMime));
-        ex.appendOutput(new vscode.NotebookCellOutput(items));
+    private static _logTests(ex: NotebookCellExecution, test: StdTestResult) : void {
+        ex.appendOutput(new vscode.NotebookCellOutput([
+            vscode.NotebookCellOutputItem.json(test, testMime)
+        ]));
     }
 
     private static _delay(ms: number) {

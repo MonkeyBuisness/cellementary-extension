@@ -3,18 +3,18 @@ import { ActivationFunction, OutputItem } from 'vscode-notebook-renderer';
 import * as style from './style.css';
 import { NotebookRenderer } from '../../core/renderer';
 
-// StdErrorRenderer represents standart error renderer.
-class StdErrorRenderer extends NotebookRenderer {
+// StdTextRenderer represents standart text renderer.
+class StdTextRenderer extends NotebookRenderer {
 
     public renderOutputItem(data: OutputItem, element: HTMLElement): void {
-        const err = data.json() as Error;
-        element.innerText = `${err.name}:\n\n${err.message}\nStack:\n\n${err.stack}`;
-        element.classList.add(style.error);
+        const result = data.text();
+        element.innerText = result;
+        element.classList.add(style.result);
     }
 }
 
 export const activate: ActivationFunction = () => ({
     renderOutputItem(data, element) {
-        new StdErrorRenderer().renderOutputItem(data, element);
+        new StdTextRenderer().renderOutputItem(data, element);
     }
 });

@@ -79,7 +79,7 @@ module.exports = (env, argv) => [
     makeConfig(argv, {
         entry:  './src/extension.ts',
         out:    './out/extension.js',
-        target: 'node'
+        target: 'node',
     }),
 
     /**
@@ -95,6 +95,12 @@ module.exports = (env, argv) => [
     makeConfig(argv, {
         entry:   './src/renderers/std-test-renderer/renderer.ts',
         out:     './out/renderers/std-test-renderer.js',
+        target:  'web',
+        library: 'module'
+    }),
+    makeConfig(argv, {
+        entry:   './src/renderers/std-text-renderer/renderer.ts',
+        out:     './out/renderers/std-text-renderer.js',
         target:  'web',
         library: 'module'
     }),
