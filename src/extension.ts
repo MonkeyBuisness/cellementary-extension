@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { CommandManager } from './commands/command-handler';
 import { EditCellMetadataCmd } from './commands/edit-cell-metadata.command';
 import { GoPlaygroundController } from './controllers/go-playground.controller';
+import { GoController } from './controllers/go.controller';
 import { NotebookManager } from './core/manager';
 import { NotebookSerializer } from './core/serializer';
 
@@ -42,6 +43,8 @@ function registerNotebookSerializers(m: NotebookManager) {
 function registerNotebookControllers(m: NotebookManager) {
     // register golang-cloud language controller.
     m.registerNotebookController(new GoPlaygroundController());
+    // register golang-local language controller.
+    m.registerNotebookController(new GoController());
 
     // INFO: register your custom controller here... 
 }

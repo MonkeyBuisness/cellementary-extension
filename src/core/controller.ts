@@ -124,16 +124,36 @@ export class NotebookCellExecution {
     }
 
     /**
-     * Replace the output of the cell that is executing.
+     * Append text items to the output of the cell that is executing.
      */
-    public replaceOutput(out: vscode.NotebookCellOutput | vscode.NotebookCellOutput[]): Thenable<void> {
-        return this.execution.replaceOutput(out);
+    public appendTextOutput(values: string[], mime?: string) : Thenable<void> {
+        const items = values.map(v => vscode.NotebookCellOutputItem.text(v, mime));
+
+        return this.execution.appendOutput(new vscode.NotebookCellOutput(items));
     }
 
     /**
-     * Append to the output of the cell that is executing.
+     * Append error items to the output of the cell that is executing.
      */
-    public appendOutput(out: vscode.NotebookCellOutput | vscode.NotebookCellOutput[]): Thenable<void> {
-        return this.execution.appendOutput(out);
+    public appendErrorOutput(...errors: Error[]) : Thenable<void> {
+        const items = errors.map(e => vscode.NotebookCellOutputItem.error(e));
+
+        return this.execution.appendOutput(new vscode.NotebookCellOutput(items));
+    }
+
+    /**
+     * Append JSON encoded items to the output of the cell that is executing.
+     */
+    public appendJSONOutput(values: any[], mime?: string) : Thenable<void> {
+        const items = values.map(v => vscode.NotebookCellOutputItem.json(v, mime));
+
+        return this.execution.appendOutput(new vscode.NotebookCellOutput(items));
+    }
+
+    /**
+     * Pauses execution of the cell for the specified time.
+     */
+    public async delay(ms: number) : Promise<unknown> {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 }

@@ -1,16 +1,14 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import * as vscode from 'vscode';
 import { URLSearchParams } from 'url';
 import fetch, { RequestInit } from 'node-fetch';
+import { AbortController } from 'node-abort-controller';
 
 import {
     NotebookCellExecution,
     NotebookController
 } from '../core/controller';
-import { StdTestResult } from '../renderers/std-test-renderer/types';
 import { GoTestResolver } from './go.controller';
-
-const testMime: string = 'application/cellementary.test';
+import { MimeTypes } from '../core/types';
 
 enum PlaygroundEventKind {
     stdoutKind = 'stdout',
@@ -66,13 +64,27 @@ export class GoPlaygroundController extends NotebookController {
     }
     
     public async execute(ex: NotebookCellExecution): Promise<boolean | undefined> {
-        const request = GoPlaygroundController._prepareCompileBody(ex.cell.content);
-        const response = await GoPlaygroundController._sendCompileBody(request);
+        const fetchAbortController = new AbortController();
+        ex.token.onCancellationRequested(() => fetchAbortController.abort());
+        const request = GoPlaygroundController._prepareCompileBody(ex.cell.content, fetchAbortController);
+
+        let response: PlaygroundCompileResponse | undefined;
+        try {
+            response = await GoPlaygroundController._sendCompileBody(request);
+        } catch(e: any) {
+            if (e.type && e.type === 'aborted') {
+                ex.appendTextOutput(['Canceled']);
+                return;
+            }
+
+            ex.appendErrorOutput(new Error(e));
+            return false;
+        }
 
         return await GoPlaygroundController._resolveCompileResponse(ex, response);
     }
 
-    private static _prepareCompileBody(body: string) : RequestInit {
+    private static _prepareCompileBody(body: string, abortController: AbortController) : RequestInit {
         const encodedParams = new URLSearchParams();
         encodedParams.set('version', '2');
         encodedParams.set('body', body);
@@ -83,7 +95,8 @@ export class GoPlaygroundController extends NotebookController {
                 'content-type': 'application/x-www-form-urlencoded'
             },
             method:  'POST',
-            body:    encodedParams
+            body:    encodedParams,
+            signal:  abortController.signal,
         };
     }
 
@@ -95,6 +108,11 @@ export class GoPlaygroundController extends NotebookController {
     private static async _resolveCompileResponse(
         ex: NotebookCellExecution,
         resp: PlaygroundCompileResponse) : Promise<boolean | undefined> {
+        if (ex.token.isCancellationRequested) {
+            ex.appendTextOutput(['Canceled']);
+            return;
+        }
+
         const success = resp.Status === 0;
 
         if (resp.IsTest) {
@@ -103,7 +121,7 @@ export class GoPlaygroundController extends NotebookController {
         }
 
         if (resp.Errors && resp.Errors.length) {
-            GoPlaygroundController._logError(ex, new Error(resp?.Errors));
+            ex.appendErrorOutput(new Error(resp?.Errors));
             return false;
         }
 
@@ -112,8 +130,13 @@ export class GoPlaygroundController extends NotebookController {
         }
 
         for (let e of resp.Events) {
+            if (ex.token.isCancellationRequested) {
+                ex.appendTextOutput(['Canceled']);
+                return;
+            }
+
             if (e.Delay) {
-                await GoPlaygroundController._delay(e.Delay / 1000000);
+                await ex.delay(e.Delay / 1000000);
             }
 
             if (!e.Message) {
@@ -122,16 +145,16 @@ export class GoPlaygroundController extends NotebookController {
 
             // check for the clear symbol.
             if (e.Message!.charCodeAt(0) === 12) {
-                GoPlaygroundController._clearResult(ex);
+                ex.clearOutput();
                 e.Message = e.Message.slice(1);
             }
 
             switch (e.Kind) {
                 case PlaygroundEventKind.stderrKind:
-                    GoPlaygroundController._logError(ex, new Error(e.Message));
+                    ex.appendErrorOutput(new Error(e.Message));
                     break;
                 case PlaygroundEventKind.stdoutKind:
-                    GoPlaygroundController._logResult(ex, e.Message);
+                    ex.appendTextOutput([e.Message]);
                     break;
             }
         }
@@ -141,40 +164,18 @@ export class GoPlaygroundController extends NotebookController {
 
     private static _resolveTestResponse(
         ex: NotebookCellExecution, resp: PlaygroundCompileResponse) : void {
+        if (ex.token.isCancellationRequested) {
+            ex.appendTextOutput(['Canceled']);
+            return;
+        }
+
         const testMessages = resp.Events?.map(e => e.Message || '');
-        GoPlaygroundController._logTests(ex,
+        ex.appendJSONOutput([
             new GoTestResolver(
                 (testMessages || []).join('\n'),
                 resp.TestsFailed === 0,
                 resp.TestsFailed || 0
-            ).resolve());
-    }
-
-    private static _logResult(ex: NotebookCellExecution, result: string) : void {
-        ex.appendOutput(new vscode.NotebookCellOutput([
-            vscode.NotebookCellOutputItem.text(result)
-        ]));
-    }
-
-    private static _logError(ex: NotebookCellExecution, err: Error) : void {
-        ex.appendOutput([
-            new vscode.NotebookCellOutput([
-              vscode.NotebookCellOutputItem.error(err)
-            ])
-        ]);
-    }
-
-    private static _clearResult(ex: NotebookCellExecution) : void {
-        ex.clearOutput();
-    }
-
-    private static _logTests(ex: NotebookCellExecution, test: StdTestResult) : void {
-        ex.appendOutput(new vscode.NotebookCellOutput([
-            vscode.NotebookCellOutputItem.json(test, testMime)
-        ]));
-    }
-
-    private static _delay(ms: number) {
-        return new Promise(resolve => setTimeout(resolve, ms));
+            ).resolve()
+        ], MimeTypes.stdTest);
     }
 }

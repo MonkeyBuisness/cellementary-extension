@@ -65,11 +65,16 @@ const makeConfig = (argv, { entry, out, target, library = 'commonjs' }) => ({
         }),
     ],
     externals: {
-        'vscode':     'commonjs vscode',
-        'util':       'commonjs util',
-        'url':        'commonjs url',
-        'node-fetch': 'commonjs node-fetch',
-        'fs':         'commonjs fs',
+        'vscode':                'commonjs vscode',
+        'util':                  'commonjs util',
+        'url':                   'commonjs url',
+        'node-fetch':            'commonjs node-fetch',
+        'fs':                    'commonjs fs',
+        'path':                  'commonjs path',
+        'os':                    'commonjs os',
+        'fs':                    'commonjs fs',
+        'child_process':         'commonjs child_process',
+        'node-abort-controller': 'commonjs node-abort-controller',
     },
 });
 

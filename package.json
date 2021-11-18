@@ -143,6 +143,8 @@
   },
   "dependencies": {
     "@vscode/codicons": "^0.0.26",
-    "@vscode/webview-ui-toolkit": "^0.8.4"
+    "@vscode/webview-ui-toolkit": "^0.8.4",
+    "node-abort-controller": "^3.0.1",
+    "uniquefilename": "^1.1.2"
   }
 }
