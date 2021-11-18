@@ -3,6 +3,7 @@ import * as UniqueFileName from 'uniquefilename';
 import { tmpdir } from 'os';
 import * as path from 'path';
 const { spawn } = require('child_process');
+import { v4 as uuidv4 } from 'uuid';
 
 import { NotebookCellExecution, NotebookController } from "../core/controller";
 import {
@@ -56,12 +57,13 @@ export class GoController extends NotebookController {
         execCmd = execCmd.trim();
 
         // save .go file into tmp dir.
-        let tmpFileNamePattern = 'notebook.go';
+        const uuid = uuidv4();
+        let tmpFileNamePattern = `notebook${uuid}}`;
         const isTest = execCmd.includes('go test');
         if (isTest) {
-            tmpFileNamePattern = 'notebook_test.go';
+            tmpFileNamePattern = tmpFileNamePattern.concat('_test');
         }
-        const tmpFile = await UniqueFileName.get(path.join(tmpdir(), tmpFileNamePattern));
+        const tmpFile = await UniqueFileName.get(path.join(tmpdir(), `${tmpFileNamePattern}.go`));
         fs.writeFileSync(tmpFile, ex.cell.content);
         execCmd = execCmd.replace(`{${GoController._execFileArg}}`, tmpFile);
         let testResponse: string = '';
@@ -87,12 +89,20 @@ export class GoController extends NotebookController {
                     continue;
                 }
 
+                let msg = data.toString();
+
+                // check for the clear symbol.
+                if (msg.charCodeAt(0) === 12) {
+                    ex.clearOutput();
+                    msg = msg.slice(1);
+                }
+
                 if (isTest) {
-                    testResponse = testResponse.concat(data.toString());
+                    testResponse = testResponse.concat(msg);
                     continue;
                 }
 
-                ex.appendTextOutput([data.toString()]);
+                ex.appendTextOutput([msg]);
             }
 
             for await (const err of stderr) {

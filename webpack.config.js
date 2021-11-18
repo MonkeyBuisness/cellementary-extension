@@ -75,6 +75,7 @@ const makeConfig = (argv, { entry, out, target, library = 'commonjs' }) => ({
         'fs':                    'commonjs fs',
         'child_process':         'commonjs child_process',
         'node-abort-controller': 'commonjs node-abort-controller',
+        'uuid':                  'commonjs uuid',
     },
 });
 
