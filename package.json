@@ -49,11 +49,38 @@
   "homepage": "https://github.com/MonkeyBuisness/cellementary-extension/blob/master/README.md",
   "main": "./out/extension.js",
   "activationEvents": [
+    "onView:kernelsView",
     "onNotebookEditor:golangbook",
     "onNotebook:golangbook"
   ],
   "icon": "resources/icon.png",
   "contributes": {
+    "configuration": {
+      "title": "Cellementary configuration",
+      "properties": {
+        "cellementary.kernels": {
+          "type": "array",
+          "default": [],
+          "description": "Cellementary kernel settings",
+          "items": {
+            "type": "object",
+            "title": "Kernal status",
+            "properties": {
+              "kernelType": {
+                "type": "string",
+                "description": "Kernel type",
+                "required": true
+              },
+              "isEnabled": {
+                "type": "boolean",
+                "description": "Is enabled",
+                "required": false
+              }
+            }
+          }
+        }
+      }
+    },
     "notebooks": [
       {
         "type": "golangbook",
@@ -91,6 +118,23 @@
         ]
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "cellementary",
+          "title": "Cellementary manager",
+          "icon": "resources/ext.svg"
+        }
+      ]
+    },
+    "views": {
+      "cellementary": [
+        {
+          "id": "kernelsView",
+          "name": "Kernels"
+        }
+      ]
+    },
     "menus": {
       "notebook/cell/title": [
         {

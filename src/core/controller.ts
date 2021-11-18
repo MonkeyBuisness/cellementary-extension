@@ -33,6 +33,10 @@ export abstract class NotebookController {
         this._controller?.dispose();
     }
 
+    public get controllerId() : string {
+        return this._controller?.id || '';
+    }
+
     private _executeHandler(cells: vscode.NotebookCell[]) : void {
         cells.forEach(async cell => {
             const execution = this._controller!.createNotebookCellExecution(cell);

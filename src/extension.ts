@@ -5,19 +5,28 @@ import { GoPlaygroundController } from './controllers/go-playground.controller';
 import { GoController } from './controllers/go.controller';
 import { NotebookManager } from './core/manager';
 import { NotebookSerializer } from './core/serializer';
+import { ConfigurationService } from './services/configuration.service';
+import { KernelsView } from './views/kernels.view';
 
 let notebookManager: NotebookManager;
 let cmdManager: CommandManager;
+let kernelsView: KernelsView;
+let cfgService: ConfigurationService;
 const defaultSerializableNotebookTypes: string[] = [
     'golangbook',
 ];
 
 export function activate(context: vscode.ExtensionContext) {
-    notebookManager = new NotebookManager(context);
-    cmdManager = new CommandManager(context);
-
     // register extension command handlers.
+    cmdManager = new CommandManager(context);
     registerCommandHandlers(cmdManager);
+
+    // register extension services.
+    registerServices(context);
+
+    // register extension views.
+    notebookManager = new NotebookManager(context, cfgService);
+    registerViews(context);
 
     // register notebook serializers.
     registerNotebookSerializers(notebookManager);
@@ -29,6 +38,7 @@ export function activate(context: vscode.ExtensionContext) {
 export function deactivate() {
     notebookManager.dispose();
     cmdManager.dispose();
+    kernelsView.dispose();
 }
 
 function registerNotebookSerializers(m: NotebookManager) {
@@ -51,4 +61,12 @@ function registerNotebookControllers(m: NotebookManager) {
 
 function registerCommandHandlers(m: CommandManager) {
     m.registerCommandHandler('cell.editMetadata', new EditCellMetadataCmd());
+}
+
+function registerViews(context: vscode.ExtensionContext) {
+    kernelsView = new KernelsView(context);
+}
+
+function registerServices(context: vscode.ExtensionContext) {
+    cfgService = new ConfigurationService(context);
 }
