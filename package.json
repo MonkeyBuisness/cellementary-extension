@@ -102,11 +102,11 @@
     },
     "commands": [
       {
-				"title": "Edit cell metadata",
+        "title": "Edit cell metadata",
         "shortTitle": "Cell metadata",
-				"command": "cell.editMetadata",
-        "icon": "$(globe)"
-			}
+        "command": "cell.editMetadata",
+        "icon": "$(database)"
+      }
     ]
   },
   "scripts": {
@@ -142,6 +142,7 @@
     "webpack-cli": "^4.7.0"
   },
   "dependencies": {
+    "@vscode/codicons": "^0.0.26",
     "@vscode/webview-ui-toolkit": "^0.8.4"
   }
 }

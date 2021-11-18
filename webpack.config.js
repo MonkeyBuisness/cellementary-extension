@@ -69,6 +69,7 @@ const makeConfig = (argv, { entry, out, target, library = 'commonjs' }) => ({
         'util':       'commonjs util',
         'url':        'commonjs url',
         'node-fetch': 'commonjs node-fetch',
+        'fs':         'commonjs fs',
     },
 });
 
