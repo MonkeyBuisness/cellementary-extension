@@ -78,6 +78,12 @@
               }
             }
           }
+        },
+        "cellementary.kernel_view_state": {
+          "type": "string",
+          "default": "none",
+          "description": "Kernels view initial group filter",
+          "enum": ["none", "by_enable_state", "by_language"]
         }
       }
     },
@@ -142,6 +148,23 @@
           "group": "inline/output@1",
           "when": "notebookCellType == code"
         }
+      ],
+      "view/title": [
+        {
+          "command": "cellementary.ungroupAll",
+          "when": "view == kernelsView",
+          "group": "navigation"
+        },
+        {
+          "command": "cellementary.groupByEnableState",
+          "when": "view == kernelsView",
+          "group": "navigation"
+        },
+        {
+          "command": "cellementary.groupByLanguage",
+          "when": "view == kernelsView",
+          "group": "navigation"
+        }
       ]
     },
     "commands": [
@@ -150,6 +173,30 @@
         "shortTitle": "Cell metadata",
         "command": "cell.editMetadata",
         "icon": "$(database)"
+      },
+      {
+        "command": "cellementary.ungroupAll",
+        "title": "Ungroup kernels",
+        "icon": {
+          "light": "resources/icons/light/no_filter.svg",
+          "dark": "resources/icons/dark/no_filter.svg"
+        }
+      },
+      {
+        "command": "cellementary.groupByEnableState",
+        "title": "Group kernels by enable state",
+        "icon": {
+          "light": "resources/icons/light/filter_one.svg",
+          "dark": "resources/icons/dark/filter_one.svg"
+        }
+      },
+      {
+        "command": "cellementary.groupByLanguage",
+        "title": "Group kernels by language",
+        "icon": {
+          "light": "resources/icons/light/filter_two.svg",
+          "dark": "resources/icons/dark/filter_two.svg"
+        }
       }
     ]
   },

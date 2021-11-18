@@ -7,11 +7,18 @@ export enum MimeTypes {
 
 // Configuration contains available extension configurations.
 export enum Configuration {
-    kernels = 'kernels'
+    kernels         = 'kernels',
+    kernelViewState = 'kernel_view_state'
 }
 
 // KernelConfig represents kernels configuration object.
 export interface KernelConfig {
     kernelType: string;
     isEnabled:  boolean;
+}
+
+// ThemeIcon represents theme icon model.
+export interface ThemeIcon {
+    light: string;
+    dark:  string;
 }

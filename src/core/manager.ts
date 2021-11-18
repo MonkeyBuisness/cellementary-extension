@@ -75,6 +75,15 @@ export class NotebookManager {
         this._disposables.forEach(d => d.dispose());
     }
 
+    /**
+     * Returns controller by Id.
+     * 
+     * @param controllerId Controller Id.
+     */
+    public getControllerById(controllerId: string) : NotebookController | undefined {
+        return this._controllers.find(c => c.controllerId === controllerId);
+    }
+
     private _reconfigureControllers() : void {
         const kernelsCfg: KernelConfig[] = this.cfgService
             .getConfiguration(Configuration.kernels, []);

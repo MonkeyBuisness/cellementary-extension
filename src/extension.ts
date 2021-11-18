@@ -1,6 +1,9 @@
 import * as vscode from 'vscode';
 import { CommandManager } from './commands/command-handler';
 import { EditCellMetadataCmd } from './commands/edit-cell-metadata.command';
+import { GroupKernelsByEnableStateCmd } from './commands/group-kernels-by-state.command';
+import { GroupKernelsByLanguageCmd } from './commands/group-kernels-by_lang.command';
+import { UngroupKernelsCmd } from './commands/ungroup-kernels.command';
 import { GoPlaygroundController } from './controllers/go-playground.controller';
 import { GoController } from './controllers/go.controller';
 import { NotebookManager } from './core/manager';
@@ -17,22 +20,22 @@ const defaultSerializableNotebookTypes: string[] = [
 ];
 
 export function activate(context: vscode.ExtensionContext) {
-    // register extension command handlers.
-    cmdManager = new CommandManager(context);
-    registerCommandHandlers(cmdManager);
-
     // register extension services.
     registerServices(context);
 
     // register extension views.
     notebookManager = new NotebookManager(context, cfgService);
-    registerViews(context);
+    registerViews(context, cfgService, notebookManager);
 
     // register notebook serializers.
     registerNotebookSerializers(notebookManager);
 
     // register notebook controllers.
     registerNotebookControllers(notebookManager);
+
+    // register extension command handlers.
+    cmdManager = new CommandManager(context);
+    registerCommandHandlers(cmdManager, kernelsView);
 }
 
 export function deactivate() {
@@ -59,12 +62,21 @@ function registerNotebookControllers(m: NotebookManager) {
     // INFO: register your custom controller here... 
 }
 
-function registerCommandHandlers(m: CommandManager) {
+function registerCommandHandlers(m: CommandManager, kernelsView: KernelsView) {
     m.registerCommandHandler('cell.editMetadata', new EditCellMetadataCmd());
+    m.registerCommandHandler('cellementary.ungroupAll',
+        new UngroupKernelsCmd(kernelsView));
+    m.registerCommandHandler('cellementary.groupByEnableState',
+        new GroupKernelsByEnableStateCmd(kernelsView));
+    m.registerCommandHandler('cellementary.groupByLanguage',
+        new GroupKernelsByLanguageCmd(kernelsView));
 }
 
-function registerViews(context: vscode.ExtensionContext) {
-    kernelsView = new KernelsView(context);
+function registerViews(
+    context: vscode.ExtensionContext,
+    cfgService: ConfigurationService,
+    notebookManager: NotebookManager) {
+    kernelsView = new KernelsView(context, cfgService, notebookManager);
 }
 
 function registerServices(context: vscode.ExtensionContext) {
