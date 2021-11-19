@@ -87,7 +87,7 @@ export class GoPlaygroundController extends NotebookController implements OnCont
         return await GoPlaygroundController._resolveCompileResponse(ex, response);
     }
 
-    contributors(): Contributor[] | undefined {
+    public contributors(): Contributor[] | undefined {
         return [
             {
                 name:  'Artsem Hutarau',
@@ -97,15 +97,15 @@ export class GoPlaygroundController extends NotebookController implements OnCont
         ];
     }
 
-    icon(): string | undefined {
+    public icon(): string | undefined {
         return 'go-playground.png';
     }
 
-    gettingStartedGuide(): string | undefined {
+    public gettingStartedGuide(): string | undefined {
         return 'go-playground.md';
     }
 
-    metadataFields(): CellMetadataField[] | undefined {
+    public metadataFields(): CellMetadataField[] | undefined {
         return;
     }
 

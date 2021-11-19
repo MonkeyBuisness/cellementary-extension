@@ -60,7 +60,7 @@ export class KernelInfoView {
             try {
                 const content = fs.readFileSync(
                     path.join(__filename, '..', '..', 'docs', 'kernels', controllerInfo.gettingStartedPath));
-                gettingStarted = content.toString().replace(/[\r\n]+/g, '\\n');
+                gettingStarted = content.toString().replace(/[\r\n]+/g, '\\n\\n');
             } catch (e: any) {
                 vscode.window.showErrorMessage(`Could not read getting-started data:\n${e}`);
             }

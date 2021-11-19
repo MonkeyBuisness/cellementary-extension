@@ -5,7 +5,13 @@ import * as path from 'path';
 const { spawn } = require('child_process');
 import { v4 as uuidv4 } from 'uuid';
 
-import { NotebookCellExecution, NotebookController } from "../core/controller";
+import {
+    CellMetadataField,
+    Contributor,
+    NotebookCellExecution,
+    NotebookController,
+    OnControllerInfo
+} from "../core/controller";
 import {
     StdTestResult,
     TestResult,
@@ -14,7 +20,7 @@ import {
 import { MimeTypes } from '../core/types';
 
 // GoController represents class implementation for running go code locally.
-export class GoController extends NotebookController {
+export class GoController extends NotebookController implements OnControllerInfo {
     private static readonly _supportedLanguages: string[] = ['go'];
     private static readonly _detail: string = 'Run go code on local machine';
     private static readonly _description: string = 'Local go execution';
@@ -141,6 +147,34 @@ export class GoController extends NotebookController {
         }
 
         return success;
+    }
+
+    public contributors(): Contributor[] | undefined {
+        return [
+            {
+                name:  'Artsem Hutarau',
+                email: 'gutorov.artem@yandex.ru',
+                url:   'https://github.com/MonkeyBuisness'
+            }
+        ];
+    }
+
+    public icon(): string | undefined {
+        return 'go-local.png';
+    }
+
+    public gettingStartedGuide(): string | undefined {
+        return 'go-local.md';
+    }
+
+    public metadataFields(): CellMetadataField[] | undefined {
+        return [
+            {
+                key:         GoController._execMeta,
+                default:     GoController._defaultExecutionCmd,
+                description: `where {${GoController._execFileArg}} is the path to the temporary file to execute`
+            }
+        ];
     }
 }
 
