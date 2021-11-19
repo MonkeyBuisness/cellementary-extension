@@ -20,7 +20,7 @@ export class GoController extends NotebookController {
     private static readonly _description: string = 'Local go execution';
     private static readonly _controllerId: string = 'go-local';
     private static readonly _notebookType: string = 'golangbook';
-    private static readonly _label: string = 'Go local compiler';
+    private static readonly _label: string = 'Go Local';
     private static readonly _execMeta: string = 'execution';
     private static readonly _execFileArg: string = 'xprog';
     private static readonly _defaultExecutionCmd: string = `go run {${GoController._execFileArg}}`;

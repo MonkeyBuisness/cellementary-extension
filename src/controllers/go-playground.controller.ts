@@ -4,8 +4,11 @@ import fetch, { RequestInit } from 'node-fetch';
 import { AbortController } from 'node-abort-controller';
 
 import {
+    CellMetadataField,
+    Contributor,
     NotebookCellExecution,
-    NotebookController
+    NotebookController,
+    OnControllerInfo
 } from '../core/controller';
 import { GoTestResolver } from './go.controller';
 import { MimeTypes } from '../core/types';
@@ -30,13 +33,13 @@ interface PlaygroundEvent {
     Message?: string;
 }
 
-export class GoPlaygroundController extends NotebookController {
+export class GoPlaygroundController extends NotebookController implements OnControllerInfo {
     private static readonly _supportedLanguages: string[] = ['go'];
     private static readonly _detail: string = 'Request to the https://play.golang.org/compile';
     private static readonly _description: string = 'Remote go execution';
     private static readonly _controllerId: string = 'go-playground';
     private static readonly _notebookType: string = 'golangbook';
-    private static readonly _label: string = 'Go playground';
+    private static readonly _label: string = 'Go Playground';
     private static readonly _compileURL: string = 'https://play.golang.org/compile';
 
     constructor() {
@@ -82,6 +85,28 @@ export class GoPlaygroundController extends NotebookController {
         }
 
         return await GoPlaygroundController._resolveCompileResponse(ex, response);
+    }
+
+    contributors(): Contributor[] | undefined {
+        return [
+            {
+                name:  'Artsem Hutarau',
+                email: 'gutorov.artem@yandex.ru',
+                url:   'https://github.com/MonkeyBuisness',
+            }
+        ];
+    }
+
+    icon(): string | undefined {
+        return 'go-playground.png';
+    }
+
+    gettingStartedGuide(): string | undefined {
+        return 'go-playground.md';
+    }
+
+    metadataFields(): CellMetadataField[] | undefined {
+        return;
     }
 
     private static _prepareCompileBody(body: string, abortController: AbortController) : RequestInit {
