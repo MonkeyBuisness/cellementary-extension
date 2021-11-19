@@ -5,7 +5,7 @@
 - Make sure you have the latest [VS Code](https://code.visualstudio.com/download) installed.
 - Make sure you have [Node.js](https://nodejs.org/en/download/) version >= 14.
 - Make sure you have [Git](https://git-scm.com/) installed.
-- Install [Yeoman](https://yeoman.io/) and [VS Code Extension Generator with](https://www.npmjs.com/package/generator-code):
+- Install [Yeoman](https://yeoman.io/) and [VS Code Extension Generator](https://www.npmjs.com/package/generator-code) with:
 ```console
 $ npm install -g yo generator-code
 ```
@@ -27,7 +27,7 @@ If you want to improve existing functionality or add completely new functionalit
 
 ## Adding a new notebook support
 
-> Before you get started, read the [official VS Code Notebooks titorial](https://code.visualstudio.com/api/extension-guides/notebook).
+> Before you get started, read the [official VS Code Notebooks API titorial](https://code.visualstudio.com/api/extension-guides/notebook).
 
 ### Adding a new serializer
 
