@@ -79,10 +79,10 @@
             }
           }
         },
-        "cellementary.kernel_view_state": {
+        "cellementary.kernels_filter": {
           "type": "string",
           "default": "none",
-          "description": "Kernels view initial group filter",
+          "description": "Kernels view filter",
           "enum": ["none", "by_enable_state", "by_language"]
         }
       }
@@ -165,6 +165,16 @@
           "when": "view == kernelsView",
           "group": "navigation"
         }
+      ],
+      "view/item/context": [
+        {
+          "command": "cellementary.disableKernel",
+					"when": "view == kernelsView && viewItem == 'controller_enabled'"
+        },
+        {
+          "command": "cellementary.enableKernel",
+					"when": "view == kernelsView && viewItem == 'controller_disabled'"
+        }
       ]
     },
     "commands": [
@@ -197,6 +207,14 @@
           "light": "resources/icons/light/filter_two.svg",
           "dark": "resources/icons/dark/filter_two.svg"
         }
+      },
+      {
+        "command": "cellementary.enableKernel",
+        "title": "Enable"
+      },
+      {
+        "command": "cellementary.disableKernel",
+        "title": "Disable"
       }
     ]
   },

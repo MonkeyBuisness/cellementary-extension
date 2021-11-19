@@ -16,7 +16,7 @@ export enum KernelNodeGroup {
     byLanguage    = 'by_language'
 }
 
-class KernelNode extends vscode.TreeItem {
+export class KernelNode extends vscode.TreeItem {
     
     constructor(
         public readonly label: string,
@@ -28,7 +28,7 @@ class KernelNode extends vscode.TreeItem {
             kind === KernelNodeKind.controller ?
                 vscode.TreeItemCollapsibleState.None : vscode.TreeItemCollapsibleState.Expanded
         );
-        this.contextValue = kind;
+        this.contextValue = `${kind}_${isEnabled ? 'enabled' : 'disabled'}`;
         let iconName: string = '';
         switch (kind) {
             case KernelNodeKind.controller:
@@ -74,10 +74,15 @@ export class KernelDataProvider implements vscode.TreeDataProvider<KernelNode> {
                 this._kernels = this.cfgService.getConfiguration(Configuration.kernels, []);
                 this._onDidChangeTreeData.fire();
             }
+
+            if (event.affectsConfiguration(`${this.cfgService.coreSection}.${Configuration.kernelsFilter}`)) {
+                this._groupBy = this.cfgService.getConfiguration(Configuration.kernelsFilter, KernelNodeGroup.none);
+                this._onDidChangeTreeData.fire();
+            }
         });
 
         this._kernels = this.cfgService.getConfiguration(Configuration.kernels, []);
-        this._groupBy = this.cfgService.getConfiguration(Configuration.kernelViewState, KernelNodeGroup.none);
+        this._groupBy = this.cfgService.getConfiguration(Configuration.kernelsFilter, KernelNodeGroup.none);
     }
 
     public getTreeItem(element: KernelNode): vscode.TreeItem | Thenable<vscode.TreeItem> {
@@ -102,7 +107,7 @@ export class KernelDataProvider implements vscode.TreeDataProvider<KernelNode> {
     public groupBy(group: KernelNodeGroup) : void {
         this._groupBy = group;
         this._onDidChangeTreeData.fire();
-        this.cfgService.setConfiguration(Configuration.kernelViewState, group);
+        this.cfgService.setConfiguration(Configuration.kernelsFilter, group);
     }
 
     private _getChildrenWithoutGrouping() : KernelNode[] {
@@ -142,10 +147,15 @@ export class KernelDataProvider implements vscode.TreeDataProvider<KernelNode> {
             return unique(languages).map(l => new KernelNode(l, true, KernelNodeKind.group));
         }
 
-        this._kernels.forEach(k => {});
+        const kernelsByLanguage = this._kernels.filter(k => {
+            const controller = this.notebookManager.getControllerById(k.kernelType);
+            if (!controller || !controller.supportedLanguages()?.includes(element.label)) {
+                return false;
+            }
 
-        return this._kernels
-            .filter(k => k.isEnabled === element.isEnabled)
-            .map(k => new KernelNode(k.kernelType, k.isEnabled));
+            return true;
+        });
+
+        return kernelsByLanguage.map(k => new KernelNode(k.kernelType, k.isEnabled));
     }
 }

@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import { CommandManager } from './commands/command-handler';
+import { DisableKernelCmd } from './commands/disable-kernel.command';
 import { EditCellMetadataCmd } from './commands/edit-cell-metadata.command';
+import { EnableKernelCmd } from './commands/enable-kernel.command';
 import { GroupKernelsByEnableStateCmd } from './commands/group-kernels-by-state.command';
 import { GroupKernelsByLanguageCmd } from './commands/group-kernels-by_lang.command';
 import { UngroupKernelsCmd } from './commands/ungroup-kernels.command';
@@ -35,7 +37,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // register extension command handlers.
     cmdManager = new CommandManager(context);
-    registerCommandHandlers(cmdManager, kernelsView);
+    registerCommandHandlers(cmdManager, kernelsView, cfgService);
 }
 
 export function deactivate() {
@@ -62,7 +64,10 @@ function registerNotebookControllers(m: NotebookManager) {
     // INFO: register your custom controller here... 
 }
 
-function registerCommandHandlers(m: CommandManager, kernelsView: KernelsView) {
+function registerCommandHandlers(
+    m: CommandManager,
+    kernelsView: KernelsView,
+    cfgService: ConfigurationService) {
     m.registerCommandHandler('cell.editMetadata', new EditCellMetadataCmd());
     m.registerCommandHandler('cellementary.ungroupAll',
         new UngroupKernelsCmd(kernelsView));
@@ -70,6 +75,10 @@ function registerCommandHandlers(m: CommandManager, kernelsView: KernelsView) {
         new GroupKernelsByEnableStateCmd(kernelsView));
     m.registerCommandHandler('cellementary.groupByLanguage',
         new GroupKernelsByLanguageCmd(kernelsView));
+    m.registerCommandHandler('cellementary.disableKernel',
+        new DisableKernelCmd(cfgService));
+    m.registerCommandHandler('cellementary.enableKernel',
+        new EnableKernelCmd(cfgService));
 }
 
 function registerViews(

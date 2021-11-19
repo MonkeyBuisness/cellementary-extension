@@ -7,20 +7,30 @@ import { convertNotebookCellData, NotebookCellData } from './serializer';
 // If you want to create your own language controller,
 // extend your class with this class and implement all abstract methods.
 export abstract class NotebookController {
-    private readonly _controller?: vscode.NotebookController;
+    private _controller?: vscode.NotebookController;
 
     /**
      * Constructor for a new notebook controller.
      *
-     * @param controllerId Represents controller identifier. Must be unique per extension.
+     * @param id           Represents controller identifier. Must be unique per extension.
      * @param notebookType A notebook type for which this controller is for.
-     * @param label The label of the controller.
+     * @param label        The label of the controller.
      */
-    constructor(controllerId: string, notebookType: string, label: string) {
+    constructor(
+        private id: string,
+        private notebookType: string,
+        private label: string
+    ) {
+        this.restore();
+    }
+
+    public restore() : void {
+        this._controller?.dispose();
+
         this._controller = vscode.notebooks.createNotebookController(
-            controllerId,
-            notebookType,
-            label,
+            this.id,
+            this.notebookType,
+            this.label,
         );
         this._controller.supportedLanguages = this.supportedLanguages();
         this._controller.supportsExecutionOrder = this.supportsExecutionOrder();

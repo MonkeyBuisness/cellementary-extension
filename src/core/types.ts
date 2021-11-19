@@ -7,8 +7,8 @@ export enum MimeTypes {
 
 // Configuration contains available extension configurations.
 export enum Configuration {
-    kernels         = 'kernels',
-    kernelViewState = 'kernel_view_state'
+    kernels       = 'kernels',
+    kernelsFilter = 'kernels_filter'
 }
 
 // KernelConfig represents kernels configuration object.

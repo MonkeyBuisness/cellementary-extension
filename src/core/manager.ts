@@ -61,6 +61,7 @@ export class NotebookManager {
             return;
         }
         if (!controllerCfg.isEnabled) {
+            controller.dispose();
             return;
         }
 
@@ -73,6 +74,7 @@ export class NotebookManager {
      */
     public dispose() : void {
         this._disposables.forEach(d => d.dispose());
+        this._controllers.forEach(d => d.dispose());
     }
 
     /**
@@ -99,6 +101,7 @@ export class NotebookManager {
                     return;
                 }
 
+                controller.restore();
                 this.context.subscriptions.push(controller);
                 this._disposables.push(controller);
                 return;
@@ -108,6 +111,7 @@ export class NotebookManager {
             if (!this.context.subscriptions.includes(controller)) {
                 return;
             }
+            controller.dispose();
 
             let index = this.context.subscriptions.indexOf(controller);
             if (index !== -1) {
