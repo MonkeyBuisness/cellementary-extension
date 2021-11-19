@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+
 import { NotebookManager } from '../core/manager';
 import { ConfigurationService } from '../services/configuration.service';
 import { KernelDataProvider, KernelNodeGroup } from './providers/kernel-view-data.provider';

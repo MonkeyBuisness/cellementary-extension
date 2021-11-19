@@ -63,9 +63,9 @@ export class EditCellMetadataView {
         <vscode-data-grid
             id="meta-grid"
             generate-header="none"
-            grid-template-columns="1fr 3fr auto">
+            grid-template-columns="2fr 3fr auto">
 
-            <vscode-data-grid-row row-type="header">
+            <vscode-data-grid-row>
                 <vscode-data-grid-cell
                     cell-type="columnheader"
                     grid-column="1">
@@ -156,16 +156,18 @@ export class EditCellMetadataView {
                     makeCellEditable(event.target, valueCell.innerText, 256);
                 });
 
-                const deleteBtnCell = document.createElement('vscode-button');
-                deleteBtnCell.setAttribute('appearance', 'icon');
+                const deleteBtnCell = document.createElement('vscode-data-grid-cell');
                 deleteBtnCell.setAttribute('grid-column', '3');
-                const icon = document.createElement('span');
-                icon.classList.add('codicon', 'codicon-remove');
-                icon.title = 'Remove metadata row';
-                deleteBtnCell.appendChild(icon);
                 deleteBtnCell.addEventListener('click', () => {
                     removeRow(row);
                 });
+                const deleteBtn = document.createElement('vscode-button');
+                deleteBtn.setAttribute('appearance', 'icon');
+                const icon = document.createElement('span');
+                icon.classList.add('codicon', 'codicon-remove');
+                icon.title = 'Remove metadata row';
+                deleteBtn.appendChild(icon);
+                deleteBtnCell.appendChild(deleteBtn);
 
                 row.append(keyCell, valueCell, deleteBtnCell);
 
