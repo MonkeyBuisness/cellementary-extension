@@ -47,6 +47,10 @@ export abstract class NotebookController {
         return this._controller?.id || '';
     }
 
+    public get controllerLabel() : string {
+        return this._controller?.label || '';
+    }
+
     private _executeHandler(cells: vscode.NotebookCell[]) : void {
         cells.forEach(async cell => {
             const execution = this._controller!.createNotebookCellExecution(cell);
@@ -170,4 +174,143 @@ export class NotebookCellExecution {
     public async delay(ms: number) : Promise<unknown> {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
+}
+
+// OnControllerInfo represents controller info interface
+// to allow user to see more details about controller.
+export interface OnControllerInfo {
+
+    /**
+     * Returns list of controller contributors.
+     */
+    contributors() : Contributor[] | undefined;
+
+    /**
+     * Returns controller icon path.
+     * See {@link ControllerInfo.iconName} for more details.
+     */
+    icon() : string | undefined;
+
+    /**
+     * Returns controller getting started guide path.
+     * See {@link ControllerInfo.gettingStartedPath} for more details.
+     */
+    gettingStartedGuide() : string | undefined;
+
+    /**
+     * Returns list of controller contributors.
+     */
+    metadataFields() : CellMetadataField[] | undefined;
+}
+
+// ControllerInfo represents interface implementation describes controller details. 
+export interface ControllerInfo {
+
+    /**
+     * Controller Id.
+     */
+    readonly id: string;
+
+    /**
+     * Controller name.
+     */
+    readonly name: string;
+
+    /**
+     * List of controller supported languages.
+     */
+    readonly supportedLanguages?: string[];
+
+    /**
+     * True if controller supports execution order.
+     */
+    readonly supportsExecutionOrder?: boolean;
+
+    /**
+     * The human-readable controller detail.
+     */
+    readonly detail?: string;
+
+    /**
+     * The human-readable controller description.
+     */
+    readonly description?: string;
+
+    /**
+     * The list of controller contributors.
+     */
+    readonly contributors?: Contributor[];
+
+    /**
+     * The name of the controller icon file.
+     * Example: my_awesome_controller.png
+     *  
+     * This file (if provided) should be located in the resources/kernels/icons folder.
+     * The icon image should be in the png/jpeg/bmp or gif format.
+     * The recommended image size is 256x256px. 
+     */
+    readonly iconName?: string;
+
+    /**
+     * The name of the controller getting started guide file.
+     * Example: my_awesome_guide.md
+     *  
+     * This file (if provided) should be located in the docs/kernels folder.
+     * The file must be in markdown format.
+     */
+    readonly gettingStartedPath?: string;
+
+    /**
+     * The list of controller cell metadata fields.
+     */
+    readonly metadataFields?: CellMetadataField[];
+}
+
+// Contributor represents controller contributor info.
+export interface Contributor {
+    
+    /**
+     * Contributor email.
+     */
+    email?: string;
+
+    /**
+     * Contributor name.
+     */
+    name: string;
+
+    /**
+     * Contributor's profile URL.
+     */
+    url?: string;
+}
+
+// CellMetadataField represents supported controller cell metadata field detail.
+export interface CellMetadataField {
+
+    /**
+     * Key name.
+     */
+    key: string;
+
+    /**
+     * Possible key values.
+     */
+    enum?: string[];
+    
+    /**
+     * Default key value.
+     */
+    default?: string;
+
+    /**
+     * Key description.
+     */
+    description?: string;
+}
+
+// isOnControllerInfo checks if object implements OnControllerInfo interface.
+export function isOnControllerInfo(object: any): object is OnControllerInfo {
+    const int = object as OnControllerInfo;
+    return int.contributors !== undefined;
 }

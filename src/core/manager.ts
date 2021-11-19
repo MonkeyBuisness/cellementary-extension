@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { NotebookSerializer } from './serializer';
-import { NotebookController } from './controller';
+import { ControllerInfo, isOnControllerInfo, NotebookController, OnControllerInfo } from './controller';
 import { ConfigurationService } from '../services/configuration.service';
 import { Configuration, KernelConfig } from './types';
 
@@ -84,6 +84,36 @@ export class NotebookManager {
      */
     public getControllerById(controllerId: string) : NotebookController | undefined {
         return this._controllers.find(c => c.controllerId === controllerId);
+    }
+
+    /**
+     * Returns controller info by Id.
+     * 
+     * @param controllerId Controller Id.
+     */
+    public getControllerInfo(controllerId: string) : ControllerInfo | undefined {
+        const controller = this._controllers.find(c => c.controllerId === controllerId);
+        if (!controller) {
+            return;
+        }
+
+        let controllerDelails: OnControllerInfo | undefined;
+        if (isOnControllerInfo(controller)) {
+            controllerDelails = controller as unknown as OnControllerInfo;
+        }
+
+        return {
+            id:                     controller.controllerId,
+            name:                   controller.controllerLabel,
+            description:            controller.description(),
+            detail:                 controller.detail(),
+            supportedLanguages:     controller.supportedLanguages(),
+            supportsExecutionOrder: controller.supportsExecutionOrder(),
+            contributors:           controllerDelails?.contributors(),
+            gettingStartedPath:     controllerDelails?.gettingStartedGuide(),
+            iconName:               controllerDelails?.icon(),
+            metadataFields:         controllerDelails?.metadataFields()
+        } as ControllerInfo;
     }
 
     private _reconfigureControllers() : void {

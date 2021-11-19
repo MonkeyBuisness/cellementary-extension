@@ -5,6 +5,7 @@ import { EditCellMetadataCmd } from './commands/edit-cell-metadata.command';
 import { EnableKernelCmd } from './commands/enable-kernel.command';
 import { GroupKernelsByEnableStateCmd } from './commands/group-kernels-by-state.command';
 import { GroupKernelsByLanguageCmd } from './commands/group-kernels-by_lang.command';
+import { ShowKernelInfoCmd } from './commands/show-kernel-info.command';
 import { UngroupKernelsCmd } from './commands/ungroup-kernels.command';
 import { GoPlaygroundController } from './controllers/go-playground.controller';
 import { GoController } from './controllers/go.controller';
@@ -37,7 +38,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // register extension command handlers.
     cmdManager = new CommandManager(context);
-    registerCommandHandlers(cmdManager, kernelsView, cfgService);
+    registerCommandHandlers(cmdManager, kernelsView, cfgService, notebookManager);
 }
 
 export function deactivate() {
@@ -67,7 +68,8 @@ function registerNotebookControllers(m: NotebookManager) {
 function registerCommandHandlers(
     m: CommandManager,
     kernelsView: KernelsView,
-    cfgService: ConfigurationService) {
+    cfgService: ConfigurationService,
+    notebookManager: NotebookManager) {
     m.registerCommandHandler('cell.editMetadata', new EditCellMetadataCmd());
     m.registerCommandHandler('cellementary.ungroupAll',
         new UngroupKernelsCmd(kernelsView));
@@ -79,6 +81,8 @@ function registerCommandHandlers(
         new DisableKernelCmd(cfgService));
     m.registerCommandHandler('cellementary.enableKernel',
         new EnableKernelCmd(cfgService));
+    m.registerCommandHandler('cellementary.kernelInfo',
+        new ShowKernelInfoCmd(notebookManager));
 }
 
 function registerViews(
