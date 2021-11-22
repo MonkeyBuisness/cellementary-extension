@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { HTMLElement, Node, NodeType, parse } from 'node-html-parser';
+import { Script, createContext } from 'vm';
 
 import {
     CellMetadataField,
@@ -54,21 +55,36 @@ export class HTMLController extends NotebookController implements OnControllerIn
 
     public async execute(ex: NotebookCellExecution): Promise<boolean | undefined> {
         let content = ex.cell.content;
+        
+        switch (ex.cell.languageId) {
+            case KnownLanguageIds.css:
+                return;
+            case KnownLanguageIds.javascript:
+                const contextObj: any = {
+                    console: {
+                        log: (...args: any[]) => {
+                            ex.appendTextOutput(args);
+                        }
+                    }
+                };
+                try {
+                    const vmContext = createContext(contextObj);
+                    const script = new Script(ex.cell.content);
+                    script.runInContext(vmContext);
+                } catch(e: any) {
+                    ex.appendErrorOutput([e as Error]);
+                    return false;
+                }
+                return true;
+        }
+
         // replace imports.
-        if (ex.cell.languageId === KnownLanguageIds.html) {
-            const results = HTMLController._replaceImports(content, ex.notebook);
-            if (results.errors && results.errors.length) {
-                vscode.window.showErrorMessage(`Could not replace imports:\n${results.errors.join('\n')}`);
-                return false;
-            }
-
-            content = results.newContent || '';
+        const results = HTMLController._replaceImports(content, ex.notebook);
+        if (results.errors && results.errors.length) {
+            vscode.window.showErrorMessage(`Could not replace imports:\n${results.errors.join('\n')}`);
+            return false;
         }
-
-        if (ex.cell.languageId === KnownLanguageIds.javascript || ex.cell.languageId === KnownLanguageIds.css) {
-            return;
-        }
-
+        content = results.newContent || '';
         const frameWidthMeta: string = (ex.cell.metadata || {})[DHTMLRendererMeta.frameWidth];
         const frameHeightMeta: string = (ex.cell.metadata || {})[DHTMLRendererMeta.frameHeight];
         const meta: { [key: string]: any } | undefined = frameWidthMeta || frameHeightMeta ? {} : undefined;
