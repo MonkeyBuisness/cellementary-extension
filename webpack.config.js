@@ -111,6 +111,12 @@ module.exports = (env, argv) => [
         target:  'web',
         library: 'module'
     }),
+    makeConfig(argv, {
+        entry:   './src/renderers/dhtml-renderer/renderer.ts',
+        out:     './out/renderers/dhtml-renderer.js',
+        target:  'web',
+        library: 'module'
+    }),
 
     // INFO: insert your custom renderers here...
 ];

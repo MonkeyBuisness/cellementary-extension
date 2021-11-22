@@ -1,0 +1,5 @@
+.contentFrame {
+    box-sizing: border-box;
+    border: 1px solid var(--vscode-notebook-focusedCellBorder);
+    min-height: 240px;
+}

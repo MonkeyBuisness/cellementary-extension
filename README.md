@@ -2,6 +2,8 @@
 
 TODO: add description
 
+# Supported languages
+
 # Contributing
 
 If you want to improve this extension or fix a found bug, please follow this [guide](https://github.com/MonkeyBuisness/cellementary-extension/blob/master/docs/contributing.md).

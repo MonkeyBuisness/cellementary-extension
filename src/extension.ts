@@ -9,6 +9,7 @@ import { ShowKernelInfoCmd } from './commands/show-kernel-info.command';
 import { UngroupKernelsCmd } from './commands/ungroup-kernels.command';
 import { GoPlaygroundController } from './controllers/go-playground.controller';
 import { GoController } from './controllers/go.controller';
+import { HTMLController } from './controllers/html.controller';
 import { NotebookManager } from './core/manager';
 import { NotebookSerializer } from './core/serializer';
 import { ConfigurationService } from './services/configuration.service';
@@ -20,6 +21,7 @@ let kernelsView: KernelsView;
 let cfgService: ConfigurationService;
 const defaultSerializableNotebookTypes: string[] = [
     'golangbook',
+    'htmlbook',
 ];
 
 export function activate(context: vscode.ExtensionContext) {
@@ -61,6 +63,8 @@ function registerNotebookControllers(m: NotebookManager) {
     m.registerNotebookController(new GoPlaygroundController());
     // register golang-local language controller.
     m.registerNotebookController(new GoController());
+    // register DHTML language controller.
+    m.registerNotebookController(new HTMLController());
 
     // INFO: register your custom controller here... 
 }

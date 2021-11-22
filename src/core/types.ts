@@ -2,7 +2,8 @@
 export enum MimeTypes {
     stdError  = 'application/vnd.code.notebook.error',
     stdTest   = 'application/cellementary.test',
-    plainText = 'text/plain'
+    plainText = 'text/plain',
+    html      = 'text/html'
 }
 
 // Configuration contains available extension configurations.
@@ -21,4 +22,69 @@ export interface KernelConfig {
 export interface ThemeIcon {
     light: string;
     dark:  string;
+}
+
+// KnownLanguageIds contains known language identifiers. 
+export enum KnownLanguageIds {
+    abap            = 'abap',
+    bat             = 'bat',
+    bibtex          = 'bibtex',
+    clojure         = 'clojure',
+    coffeescript    = 'coffeescript',
+    c               = 'c',
+    cpp             = 'cpp',
+    csharp          = 'csharp',
+    css             = 'css',
+    diff            = 'diff',
+    dockerfile      = 'dockerfile',
+    fsharp          = 'fsharp',
+    gitCommit       = 'git-commit',
+    gitRebase       = 'git-rebase',
+    go              = 'go',
+    groovy          = 'groovy',
+    handlebars      = 'handlebars',
+    haml            = 'haml',
+    html            = 'html',
+    ini             = 'ini',
+    java            = 'java',
+    javascript      = 'javascript',
+    javascriptReact = 'javascriptreact',
+    json            = 'json',
+    jsonc           = 'jsonc',
+    latex           = 'latex',
+    less            = 'less',
+    lua             = 'lua',
+    makefile        = 'makefile',
+    markdown        = 'markdown',
+    objectiveC      = 'objective-c',
+    objectiveCpp    = 'objective-cpp',
+    perl            = 'perl',
+    perl6           = 'perl6',
+    php             = 'php',
+    plaintext       = 'plaintext',
+    powershell      = 'powershell',
+    jade            = 'jade',
+    pug             = 'pug',
+    python          = 'python',
+    r               = 'r',
+    razor           = 'razor',
+    ruby            = 'ruby',
+    rust            = 'rust',
+    scss            = 'scss',
+    sass            = 'sass',
+    shaderlab       = 'shaderlab',
+    shellscript     = 'shellscript',
+    slim            = 'slim',
+    sql             = 'sql',
+    stylus          = 'stylus',
+    swift           = 'swift',
+    typescript      = 'typescript',
+    typescriptReact = 'typescriptreact',
+    tex             = 'tex',
+    vb              = 'vb',
+    vue             = 'vue',
+    vueHTML         = 'vue-html',
+    xml             = 'xml',
+    xsl             = 'xsl',
+    yaml            = 'yaml'
 }

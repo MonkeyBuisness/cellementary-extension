@@ -80,7 +80,7 @@ export class GoPlaygroundController extends NotebookController implements OnCont
                 return;
             }
 
-            ex.appendErrorOutput(new Error(e));
+            ex.appendErrorOutput([new Error(e)]);
             return false;
         }
 
@@ -146,7 +146,7 @@ export class GoPlaygroundController extends NotebookController implements OnCont
         }
 
         if (resp.Errors && resp.Errors.length) {
-            ex.appendErrorOutput(new Error(resp?.Errors));
+            ex.appendErrorOutput([new Error(resp?.Errors)]);
             return false;
         }
 
@@ -176,7 +176,7 @@ export class GoPlaygroundController extends NotebookController implements OnCont
 
             switch (e.Kind) {
                 case PlaygroundEventKind.stderrKind:
-                    ex.appendErrorOutput(new Error(e.Message));
+                    ex.appendErrorOutput([new Error(e.Message)]);
                     break;
                 case PlaygroundEventKind.stdoutKind:
                     ex.appendTextOutput([e.Message]);

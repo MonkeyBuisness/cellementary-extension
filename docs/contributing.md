@@ -137,6 +137,7 @@ To create a new notebook controller, follow these steps:
     "onNotebook":       "<type of your notebook>"
 }
 ```
+- If your controller uses the default serializer, open `src/extension.ts` file and add your notebook type to the `defaultSerializableNotebookTypes` array.
 - Create a new file named `<type of your notebook>.controller.ts` in the `src/controllers` folder.
 - Create a new class named `<CustomControllerName>Controller` in this file.
 - Extend this class with the `NotebookController` class and `OnControllerInfo` interface.
@@ -150,6 +151,7 @@ You can find a list of VS Code known language identifiers [here](https://github.
 
 - Update the `"version"` tag value in the `package.json` file.
 - If you've added a new controller, add the `*.*book` file to the `example` folder.
+- Update the `Supported languages` section in the `README.md` file (if necessary).
 - Create a new PR with all changes.
 
 ## Thanks!

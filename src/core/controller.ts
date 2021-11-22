@@ -144,28 +144,28 @@ export class NotebookCellExecution {
     /**
      * Append text items to the output of the cell that is executing.
      */
-    public appendTextOutput(values: string[], mime?: string) : Thenable<void> {
+    public appendTextOutput(values: string[], mime?: string, metadata?: { [key: string]: any }) : Thenable<void> {
         const items = values.map(v => vscode.NotebookCellOutputItem.text(v, mime));
 
-        return this.execution.appendOutput(new vscode.NotebookCellOutput(items));
+        return this.execution.appendOutput(new vscode.NotebookCellOutput(items, metadata));
     }
 
     /**
      * Append error items to the output of the cell that is executing.
      */
-    public appendErrorOutput(...errors: Error[]) : Thenable<void> {
+    public appendErrorOutput(errors: Error[], metadata?: { [key: string]: any }) : Thenable<void> {
         const items = errors.map(e => vscode.NotebookCellOutputItem.error(e));
 
-        return this.execution.appendOutput(new vscode.NotebookCellOutput(items));
+        return this.execution.appendOutput(new vscode.NotebookCellOutput(items, metadata));
     }
 
     /**
      * Append JSON encoded items to the output of the cell that is executing.
      */
-    public appendJSONOutput(values: any[], mime?: string) : Thenable<void> {
+    public appendJSONOutput(values: any[], mime?: string, metadata?: { [key: string]: any }) : Thenable<void> {
         const items = values.map(v => vscode.NotebookCellOutputItem.json(v, mime));
 
-        return this.execution.appendOutput(new vscode.NotebookCellOutput(items));
+        return this.execution.appendOutput(new vscode.NotebookCellOutput(items, metadata));
     }
 
     /**

@@ -51,7 +51,9 @@
   "activationEvents": [
     "onView:kernelsView",
     "onNotebookEditor:golangbook",
-    "onNotebook:golangbook"
+    "onNotebook:golangbook",
+    "onNotebookEditor:htmlbook",
+    "onNotebook:htmlbook"
   ],
   "icon": "resources/icon.png",
   "contributes": {
@@ -83,7 +85,11 @@
           "type": "string",
           "default": "none",
           "description": "Kernels view filter",
-          "enum": ["none", "by_enable_state", "by_language"]
+          "enum": [
+            "none",
+            "by_enable_state",
+            "by_language"
+          ]
         }
       }
     },
@@ -94,6 +100,15 @@
         "selector": [
           {
             "filenamePattern": "*.gobook"
+          }
+        ]
+      },
+      {
+        "type": "htmlbook",
+        "displayName": "HTML book",
+        "selector": [
+          {
+            "filenamePattern": "*.htmlbook"
           }
         ]
       }
@@ -121,6 +136,14 @@
         "displayName": "Standart text renderer",
         "mimeTypes": [
           "text/plain"
+        ]
+      },
+      {
+        "id": "dhtml-renderer",
+        "entrypoint": "./out/renderers/dhtml-renderer.js",
+        "displayName": "Dynamic HTML renderer",
+        "mimeTypes": [
+          "text/html"
         ]
       }
     ],
@@ -169,15 +192,15 @@
       "view/item/context": [
         {
           "command": "cellementary.disableKernel",
-					"when": "view == kernelsView && viewItem == 'controller_enabled'"
+          "when": "view == kernelsView && viewItem == 'controller_enabled'"
         },
         {
           "command": "cellementary.enableKernel",
-					"when": "view == kernelsView && viewItem == 'controller_disabled'"
+          "when": "view == kernelsView && viewItem == 'controller_disabled'"
         },
         {
           "command": "cellementary.kernelInfo",
-					"when": "view == kernelsView && viewItem =~ /controller/",
+          "when": "view == kernelsView && viewItem =~ /controller/",
           "group": "inline"
         }
       ]
@@ -268,6 +291,7 @@
     "@vscode/codicons": "^0.0.26",
     "@vscode/webview-ui-toolkit": "^0.8.4",
     "node-abort-controller": "^3.0.1",
+    "node-html-parser": "^5.1.0",
     "uniquefilename": "^1.1.2",
     "uuid": "^8.3.2"
   }

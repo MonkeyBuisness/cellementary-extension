@@ -120,7 +120,7 @@ export class GoController extends NotebookController implements OnControllerInfo
                     continue;
                 }
 
-                ex.appendErrorOutput(new Error(err.toString()));
+                ex.appendErrorOutput([new Error(err.toString())]);
                 success = false;
             }
 
@@ -132,7 +132,7 @@ export class GoController extends NotebookController implements OnControllerInfo
             }
         } catch(e: any) {
             const err = e as Error;
-            ex.appendErrorOutput(err);
+            ex.appendErrorOutput([err]);
             success = false;
         } finally {
             if (proc?.killed) {
