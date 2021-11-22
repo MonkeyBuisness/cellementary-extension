@@ -20,8 +20,9 @@ export class KernelNode extends vscode.TreeItem {
     
     constructor(
         public readonly label: string,
-        public isEnabled: boolean = true,
-        public readonly kind: KernelNodeKind = KernelNodeKind.controller
+        public readonly isEnabled: boolean = true,
+        public readonly kind: KernelNodeKind = KernelNodeKind.controller,
+        public readonly group?: KernelNodeGroup
     ) {
         super(
             label,
@@ -29,14 +30,18 @@ export class KernelNode extends vscode.TreeItem {
                 vscode.TreeItemCollapsibleState.None : vscode.TreeItemCollapsibleState.Expanded
         );
         this.contextValue = `${kind}_${isEnabled ? 'enabled' : 'disabled'}`;
-        let iconName: string = '';
+        let iconName: string | string[] = '';
         switch (kind) {
             case KernelNodeKind.controller:
                 iconName = isEnabled ? 'enabled_kernel' : 'disabled_kernel';
                 this.tooltip = isEnabled ? 'Enabled' : 'Disabled';
                 break;
             case KernelNodeKind.group:
-                iconName = 'kernel_group';
+                if (group === KernelNodeGroup.byEnableState) {
+                    iconName = isEnabled ? 'enabled_kernel' : 'disabled_kernel';
+                } else if (group === KernelNodeGroup.byLanguage) {
+                    iconName = path.join('..', 'devicon', label);
+                }
                 this.tooltip = label;
                 break;
             default:
@@ -53,6 +58,8 @@ export class KernelNode extends vscode.TreeItem {
             light: path.join(basePath, 'light', iconFile),
         };
     }
+
+    public static localeCompare = (a: KernelNode, b: KernelNode) => a.label.localeCompare(b.label);
 }
 
 // KernelDataProvider represents kernel view data provider implementation.
@@ -112,14 +119,14 @@ export class KernelDataProvider implements vscode.TreeDataProvider<KernelNode> {
 
     private _getChildrenWithoutGrouping() : KernelNode[] {
         const nodes = this._kernels.map(k => new KernelNode(k.kernelType, k.isEnabled));
-        return nodes;
+        return nodes.sort(KernelNode.localeCompare);
     }
 
     private _getChildrenGroupedByEnableState(element?: KernelNode) : KernelNode[] {
         if (!element) {
             const groups: KernelNode[] = [
-                new KernelNode('Enabled kernels', true, KernelNodeKind.group),
-                new KernelNode('Disabled kernels', false, KernelNodeKind.group),
+                new KernelNode('Enabled kernels', true, KernelNodeKind.group, this._groupBy),
+                new KernelNode('Disabled kernels', false, KernelNodeKind.group, this._groupBy),
             ];
 
             return groups;
@@ -127,7 +134,8 @@ export class KernelDataProvider implements vscode.TreeDataProvider<KernelNode> {
 
         return this._kernels
             .filter(k => k.isEnabled === element.isEnabled)
-            .map(k => new KernelNode(k.kernelType, k.isEnabled));
+            .map(k => new KernelNode(k.kernelType, k.isEnabled))
+            .sort(KernelNode.localeCompare);
     }
 
     private _getChildrenGroupedByLanguage(element?: KernelNode) : KernelNode[] {
@@ -144,7 +152,9 @@ export class KernelDataProvider implements vscode.TreeDataProvider<KernelNode> {
                 languages.push(...supportedLanguages);
             });
 
-            return unique(languages).map(l => new KernelNode(l, true, KernelNodeKind.group));
+            return unique(languages)
+                .map(l => new KernelNode(l, true, KernelNodeKind.group, this._groupBy))
+                .sort(KernelNode.localeCompare);
         }
 
         const kernelsByLanguage = this._kernels.filter(k => {
@@ -156,6 +166,8 @@ export class KernelDataProvider implements vscode.TreeDataProvider<KernelNode> {
             return true;
         });
 
-        return kernelsByLanguage.map(k => new KernelNode(k.kernelType, k.isEnabled));
+        return kernelsByLanguage
+            .map(k => new KernelNode(k.kernelType, k.isEnabled))
+            .sort(KernelNode.localeCompare);
     }
 }
