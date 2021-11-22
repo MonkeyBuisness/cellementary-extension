@@ -57,29 +57,33 @@ export function convertNotebookCellData(cell: vscode.NotebookCell) : NotebookCel
 // NotebookSerializer represents default serializer implementation
 // to interpretate notebook cells data.
 export class NotebookSerializer implements vscode.NotebookSerializer {
+    public static readonly version: string = '1.0';
     
     public async deserializeNotebook(content: Uint8Array): Promise<vscode.NotebookData> {
         const contents = new TextDecoder().decode(content);
     
-        let rawData: NotebookCellData[] = [];
+        let rawData: NotebookData | undefined;
         try {
-            rawData = <NotebookCellData[]>JSON.parse(contents);
+            rawData = <NotebookData>JSON.parse(contents);
         } catch {
-            rawData = [];
+            return new vscode.NotebookData([]);
         }
         
-        const cells = rawData.map(item => {
+        const cells = rawData.cells.map(item => {
             const cellData = new vscode.NotebookCellData(item.kind, item.content, item.languageId);
             cellData.metadata = item.metadata;
 
             return cellData;
         });
     
-        return new vscode.NotebookData(cells);
+        const notebookData = new vscode.NotebookData(cells);
+        notebookData.metadata = rawData.metadata;
+
+        return notebookData;
     }
 
     public async serializeNotebook(data: vscode.NotebookData): Promise<Uint8Array> {  
-        const contents: NotebookCellData[] = data.cells
+        const cells: NotebookCellData[] = data.cells
             .map<NotebookCellData>((cell: vscode.NotebookCellData) => {
                 return {
                     content:          cell.value,
@@ -87,10 +91,30 @@ export class NotebookSerializer implements vscode.NotebookSerializer {
                     languageId:       cell.languageId,
                     executionSummary: cell.executionSummary,
                     metadata:         cell.metadata,
-                    outputs:          cell.outputs,
                 } as NotebookCellData;
             });
-            
-        return new TextEncoder().encode(JSON.stringify(contents));
+        const notebookData: NotebookData = {
+            cells:    cells,
+            metadata: data.metadata || {}
+        };
+
+        // apply default metadata.
+        notebookData.metadata!.version = NotebookSerializer.version; 
+
+        return new TextEncoder().encode(JSON.stringify(notebookData));
     }
+}
+
+// NotebookData represents notebook cell data model.
+export interface NotebookData {
+    
+    /**
+     * The cell data of this notebook data.
+     */
+    cells: NotebookCellData[];
+    
+    /**
+     * Arbitrary metadata of notebook data.
+     */
+    metadata?: { [key: string]: any };
 }

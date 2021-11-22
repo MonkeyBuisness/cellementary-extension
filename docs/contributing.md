@@ -18,6 +18,10 @@ $ git clone https://github.com/MonkeyBuisness/cellementary-extension
 ```console
 $ npm i
 ```
+- Build extension
+```console
+$ npm run compile
+```
 
 ## Branch naming
 
