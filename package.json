@@ -210,7 +210,7 @@
         "title": "Edit cell metadata",
         "shortTitle": "Cell metadata",
         "command": "cell.editMetadata",
-        "icon": "$(database)"
+        "icon": "$(symbol-key)"
       },
       {
         "command": "cellementary.ungroupAll",
