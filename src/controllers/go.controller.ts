@@ -82,6 +82,17 @@ export class GoController extends NotebookController implements OnControllerInfo
             proc = spawn(commands[0], commands.slice(1) || []);
             const { stdout, stderr } = proc;
 
+            proc.on('error', (e: any) => {
+                success = false;
+                const err = e as Error;
+
+                if (e.code && e.code === 'ENOENT') {
+                    err.message = `could not find '${commands[0]}' executable`;
+                }
+
+                ex.appendErrorOutput([err]);
+            });
+
             ex.token.onCancellationRequested(() => {
                 proc.kill();
             });
