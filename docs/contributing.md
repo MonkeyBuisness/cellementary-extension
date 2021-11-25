@@ -22,6 +22,7 @@ $ npm i
 ```console
 $ npm run compile
 ```
+- Press `F5` to run it.
 
 ## Branch naming
 

@@ -57,7 +57,6 @@ export function convertNotebookCellData(cell: vscode.NotebookCell) : NotebookCel
 // NotebookSerializer represents default serializer implementation
 // to interpretate notebook cells data.
 export class NotebookSerializer implements vscode.NotebookSerializer {
-    public static readonly version: string = '1.0';
     
     public async deserializeNotebook(content: Uint8Array): Promise<vscode.NotebookData> {
         const contents = new TextDecoder().decode(content);
@@ -97,9 +96,6 @@ export class NotebookSerializer implements vscode.NotebookSerializer {
             cells:    cells,
             metadata: data.metadata || {}
         };
-
-        // apply default metadata.
-        notebookData.metadata!.version = NotebookSerializer.version; 
 
         return new TextEncoder().encode(JSON.stringify(notebookData));
     }

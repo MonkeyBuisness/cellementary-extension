@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { CommandManager } from './commands/command-handler';
 import { DisableKernelCmd } from './commands/disable-kernel.command';
 import { EditCellMetadataCmd } from './commands/edit-cell-metadata.command';
+import { EditNotebookMetadataCmd } from './commands/edit-notebook-metadata.command';
 import { EnableKernelCmd } from './commands/enable-kernel.command';
 import { GroupKernelsByEnableStateCmd } from './commands/group-kernels-by-state.command';
 import { GroupKernelsByLanguageCmd } from './commands/group-kernels-by_lang.command';
@@ -87,6 +88,7 @@ function registerCommandHandlers(
         new EnableKernelCmd(cfgService));
     m.registerCommandHandler('cellementary.kernelInfo',
         new ShowKernelInfoCmd(notebookManager));
+    m.registerCommandHandler('notebook.editMetadata', new EditNotebookMetadataCmd());
 }
 
 function registerViews(

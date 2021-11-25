@@ -172,6 +172,12 @@
           "when": "notebookCellType == code"
         }
       ],
+      "notebook/toolbar": [
+        {
+          "command": "notebook.editMetadata",
+          "group": "navigation"
+        }
+      ],
       "view/title": [
         {
           "command": "cellementary.ungroupAll",
@@ -210,6 +216,12 @@
         "title": "Edit cell metadata",
         "shortTitle": "Cell metadata",
         "command": "cell.editMetadata",
+        "icon": "$(symbol-key)"
+      },
+      {
+        "title": "Edit notebook metadata",
+        "shortTitle": "Notebook metadata",
+        "command": "notebook.editMetadata",
         "icon": "$(symbol-key)"
       },
       {
