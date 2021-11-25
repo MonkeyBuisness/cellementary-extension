@@ -9,6 +9,7 @@ export class Executor {
     private _proc?: any;
     private _stderrStreamFinished: boolean = false;
     private _stdoutStreamFinished: boolean = false;
+    private _canceled: boolean = false;
 
     constructor(cmd: string) {
         this._cmds = cmd.split(' ');
@@ -39,13 +40,14 @@ export class Executor {
                 h?.error(err);
             }
         } finally {
-            if (this._proc?.killed) {
+            if (this._canceled) {
                 h?.canceled();
             }
         }
     }
 
     public async cancel(signal: string = 'SIGINT') : Promise<void> {
+        this._canceled = true;
         this._proc?.kill(signal);
     }
 
