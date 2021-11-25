@@ -198,9 +198,14 @@ export interface OnControllerInfo {
     gettingStartedGuide() : string | undefined;
 
     /**
-     * Returns list of controller contributors.
+     * Returns list of controller cell metadata.
      */
-    metadataFields() : CellMetadataField[] | undefined;
+    cellMetadata() : MetadataField[] | undefined;
+
+    /**
+     * Returns list of controller notebook metadata.
+     */
+    notebookMetadata() : MetadataField[] | undefined;
 }
 
 // ControllerInfo represents interface implementation describes controller details. 
@@ -263,7 +268,12 @@ export interface ControllerInfo {
     /**
      * The list of controller cell metadata fields.
      */
-    readonly metadataFields?: CellMetadataField[];
+    readonly cellMetadata?: MetadataField[];
+
+    /**
+     * The list of controller notebook metadata fields.
+     */
+    readonly notebookMetadata?: MetadataField[];
 }
 
 // Contributor represents controller contributor info.
@@ -285,8 +295,8 @@ export interface Contributor {
     url?: string;
 }
 
-// CellMetadataField represents supported controller cell metadata field detail.
-export interface CellMetadataField {
+// MetadataField represents supported controller metadata field detail.
+export interface MetadataField {
 
     /**
      * Key name.

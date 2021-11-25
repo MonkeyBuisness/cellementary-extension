@@ -3,7 +3,7 @@ import { HTMLElement, Node, NodeType, parse } from 'node-html-parser';
 import { Script, createContext } from 'vm';
 
 import {
-    CellMetadataField,
+    MetadataField,
     Contributor,
     NotebookCellExecution,
     NotebookController,
@@ -118,7 +118,7 @@ export class HTMLController extends NotebookController implements OnControllerIn
         return 'dhtml.md';
     }
 
-    public metadataFields(): CellMetadataField[] | undefined {
+    public cellMetadata(): MetadataField[] | undefined {
         return [
             {
                 key:         HTMLController._cellIdMeta,
@@ -137,6 +137,10 @@ export class HTMLController extends NotebookController implements OnControllerIn
         ];
     }
 
+    public notebookMetadata(): MetadataField[] | undefined {
+        return;
+    }
+
     private static _replaceImports(content: string, notebook: vscode.NotebookDocument) : ReplaceImportsResult {
         const root = parse(content, {
             comment: true,
@@ -150,8 +154,6 @@ export class HTMLController extends NotebookController implements OnControllerIn
         if (!commentNodes || !commentNodes.length) {
             return results;
         }
-
-        //root.replaceWith()
 
         const cells = notebook.getCells();
         commentNodes.forEach(comment => {

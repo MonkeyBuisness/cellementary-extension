@@ -6,7 +6,7 @@ const { spawn } = require('child_process');
 import { v4 as uuidv4 } from 'uuid';
 
 import {
-    CellMetadataField,
+    MetadataField,
     Contributor,
     NotebookCellExecution,
     NotebookController,
@@ -178,7 +178,7 @@ export class GoController extends NotebookController implements OnControllerInfo
         return 'go-local.md';
     }
 
-    public metadataFields(): CellMetadataField[] | undefined {
+    public cellMetadata(): MetadataField[] | undefined {
         return [
             {
                 key:         GoController._execMeta,
@@ -186,6 +186,10 @@ export class GoController extends NotebookController implements OnControllerInfo
                 description: `where {${GoController._execFileArg}} is the path to the temporary file to execute`
             }
         ];
+    }
+
+    public notebookMetadata(): MetadataField[] | undefined {
+        return;
     }
 }
 

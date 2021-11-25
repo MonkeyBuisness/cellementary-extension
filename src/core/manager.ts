@@ -112,7 +112,8 @@ export class NotebookManager {
             contributors:           controllerDelails?.contributors(),
             gettingStartedPath:     controllerDelails?.gettingStartedGuide(),
             iconName:               controllerDelails?.icon(),
-            metadataFields:         controllerDelails?.metadataFields()
+            cellMetadata:           controllerDelails?.cellMetadata(),
+            notebookMetadata:       controllerDelails?.notebookMetadata()
         } as ControllerInfo;
     }
 

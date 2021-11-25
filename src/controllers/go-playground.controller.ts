@@ -4,7 +4,7 @@ import fetch, { RequestInit } from 'node-fetch';
 import { AbortController } from 'node-abort-controller';
 
 import {
-    CellMetadataField,
+    MetadataField,
     Contributor,
     NotebookCellExecution,
     NotebookController,
@@ -41,6 +41,7 @@ export class GoPlaygroundController extends NotebookController implements OnCont
     private static readonly _notebookType: string = 'golangbook';
     private static readonly _label: string = 'Go Playground';
     private static readonly _compileURL: string = 'https://play.golang.org/compile';
+    private static readonly _compileURLMeta: string = 'playground-url';
 
     constructor() {
         super(
@@ -105,8 +106,18 @@ export class GoPlaygroundController extends NotebookController implements OnCont
         return 'go-playground.md';
     }
 
-    public metadataFields(): CellMetadataField[] | undefined {
+    public cellMetadata(): MetadataField[] | undefined {
         return;
+    }
+
+    public notebookMetadata(): MetadataField[] | undefined {
+        return [
+            {
+                key:         GoPlaygroundController._compileURLMeta,
+                default:     GoPlaygroundController._compileURL,
+                description: 'URL of the go-playground to which the request will be sent'
+            }
+        ];
     }
 
     private static _prepareCompileBody(body: string, abortController: AbortController) : RequestInit {

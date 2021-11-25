@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { CellMetadataField, Contributor, ControllerInfo } from '../core/controller';
+import { MetadataField, Contributor, ControllerInfo } from '../core/controller';
 import { getUri } from './utils';
 
 export class KernelInfoView {
@@ -71,7 +71,14 @@ export class KernelInfoView {
                 url:   ${c.url === undefined ? undefined : '"' + c.url + '"'},
                 email: ${c.email === undefined ? undefined : '"' + c.email + '"'}
             }`);  
-        const metadata = controllerInfo.metadataFields?.map(m => 
+        const cellMetadata = controllerInfo.cellMetadata?.map(m => 
+            `{
+                key:         "${m.key}",
+                default:     ${m.default === undefined ? undefined : '"' + m.default + '"'},
+                description: ${m.description === undefined ? undefined : '"' + m.description + '"'},
+                enum:        ${m.enum === undefined ? undefined : "[" + m.enum.map(e => '"' + e + '"').join(',') + "]"}
+            }`);
+        const notebookMetadata = controllerInfo.notebookMetadata?.map(m => 
             `{
                 key:         "${m.key}",
                 default:     ${m.default === undefined ? undefined : '"' + m.default + '"'},
@@ -166,7 +173,21 @@ export class KernelInfoView {
 
             #description {
                 font-size: 18px;
-                line-height: 28px;
+                line-height: 38px;
+            }
+
+            .metadata-panel .metadata-label {
+                font-size: 18px;
+                font-weight: bolder;
+                margin: 0 0 12px 12px;
+            }
+
+            vscode-data-grid {
+                margin-bottom: 20px;
+            }
+
+            .codicon {
+                display: inline-block !important;
             }
         </style>
     </head>
@@ -196,7 +217,7 @@ export class KernelInfoView {
             <vscode-panel-tab id="tab-getting-started">Getting Started</vscode-panel-tab>
             <vscode-panel-tab id="tab-description">Description</vscode-panel-tab>
             <vscode-panel-tab id="tab-contributors">Contributors</vscode-panel-tab>
-            <vscode-panel-tab id="tab-metadata">Cells metadata</vscode-panel-tab>
+            <vscode-panel-tab id="tab-metadata">Metadata</vscode-panel-tab>
 
             <vscode-panel-view>
                 <div id="getting-started"></div>
@@ -204,8 +225,15 @@ export class KernelInfoView {
 
             <vscode-panel-view>
                 <div id="description">
-                    <div>${controllerInfo.description || ''}</div>
-                    <div>${controllerInfo.detail || ''}</div>
+                    <div>
+                        <span class="codicon codicon-info"></span>
+                        ${controllerInfo.description || ''}
+                    </div>
+                    
+                    <div>
+                        <span class="codicon codicon-info"></span>
+                        ${controllerInfo.detail || ''}
+                    </div>
                 </div>
             </vscode-panel-view>
 
@@ -213,41 +241,84 @@ export class KernelInfoView {
                 <div id="contributors"></div>
             </vscode-panel-view>
             
-            <vscode-panel-view>
-                <vscode-data-grid
-                    id="meta-grid"
-                    generate-header="none"
-                    grid-template-columns="1fr 2fr 2fr 5fr">
+            <vscode-panel-view class="metadata-panel">
+                <div>
+                    <div class="metadata-label">Cell Metadata</div>
+                    <vscode-divider role="separator"></vscode-divider>
 
-                    <vscode-data-grid-row>
-                        <vscode-data-grid-cell
-                            cell-type="columnheader"
-                            grid-column="1">
+                    <vscode-data-grid
+                        id="meta-cell-grid"
+                        generate-header="none"
+                        grid-template-columns="1fr 2fr 2fr 5fr">
 
-                            Key
-                        </vscode-data-grid-cell>
-                        <vscode-data-grid-cell
-                            cell-type="columnheader"
-                            grid-column="2">
-                            
-                            Default value
-                        </vscode-data-grid-cell>
+                        <vscode-data-grid-row>
+                            <vscode-data-grid-cell
+                                cell-type="columnheader"
+                                grid-column="1">
 
-                        <vscode-data-grid-cell
-                            cell-type="columnheader"
-                            grid-column="3">
+                                Key
+                            </vscode-data-grid-cell>
+                            <vscode-data-grid-cell
+                                cell-type="columnheader"
+                                grid-column="2">
+                                
+                                Default value
+                            </vscode-data-grid-cell>
 
-                            Available values
-                        </vscode-data-grid-cell>
+                            <vscode-data-grid-cell
+                                cell-type="columnheader"
+                                grid-column="3">
 
-                        <vscode-data-grid-cell
-                            cell-type="columnheader"
-                            grid-column="4">
+                                Available values
+                            </vscode-data-grid-cell>
 
-                            Description
-                        </vscode-data-grid-cell>
-                    </vscode-data-grid-row>
-                </vscode-data-grid>
+                            <vscode-data-grid-cell
+                                cell-type="columnheader"
+                                grid-column="4">
+
+                                Description
+                            </vscode-data-grid-cell>
+                        </vscode-data-grid-row>
+                    </vscode-data-grid>
+
+                    <div class="metadata-label">Notebook Metadata</div>
+                    <vscode-divider role="separator"></vscode-divider>
+
+                    <vscode-data-grid
+                        id="meta-note-grid"
+                        generate-header="none"
+                        grid-template-columns="1fr 2fr 2fr 5fr">
+
+                        <vscode-data-grid-row>
+                            <vscode-data-grid-cell
+                                cell-type="columnheader"
+                                grid-column="1">
+
+                                Key
+                            </vscode-data-grid-cell>
+                            <vscode-data-grid-cell
+                                cell-type="columnheader"
+                                grid-column="2">
+                                
+                                Default value
+                            </vscode-data-grid-cell>
+
+                            <vscode-data-grid-cell
+                                cell-type="columnheader"
+                                grid-column="3">
+
+                                Available values
+                            </vscode-data-grid-cell>
+
+                            <vscode-data-grid-cell
+                                cell-type="columnheader"
+                                grid-column="4">
+
+                                Description
+                            </vscode-data-grid-cell>
+                        </vscode-data-grid-row>
+                    </vscode-data-grid>
+                </div>
             </vscode-panel-view>
         </vscode-panels>
 
@@ -293,9 +364,9 @@ export class KernelInfoView {
             });
 
             // cells metadata.
-            const metadataGridBlock = document.getElementById('meta-grid');
-            const metadata = [${(metadata || []).join(',')}];
-            metadata.forEach(m => {
+            const cellMetadataGridBlock = document.getElementById('meta-cell-grid');
+            const cellMetadata = [${(cellMetadata || []).join(',')}];
+            cellMetadata.forEach(m => {
                 const row = document.createElement('vscode-data-grid-row');
 
                 const keyCell = document.createElement('vscode-data-grid-cell');
@@ -315,7 +386,33 @@ export class KernelInfoView {
                 descriptionCell.innerText = m.description || '-';
 
                 row.append(keyCell, defaultValueCell, availableValuesCell, descriptionCell);
-                metadataGridBlock.appendChild(row);
+                cellMetadataGridBlock.appendChild(row);
+            });
+
+            // notebook metadata.
+            const noteMetadataGridBlock = document.getElementById('meta-note-grid');
+            const noteMetadata = [${(notebookMetadata || []).join(',')}];
+            noteMetadata.forEach(m => {
+                const row = document.createElement('vscode-data-grid-row');
+
+                const keyCell = document.createElement('vscode-data-grid-cell');
+                keyCell.setAttribute('grid-column', '1');
+                keyCell.innerText = m.key;
+
+                const defaultValueCell = document.createElement('vscode-data-grid-cell');
+                defaultValueCell.setAttribute('grid-column', '2');
+                defaultValueCell.innerText = m.default || '-';
+
+                const availableValuesCell = document.createElement('vscode-data-grid-cell');
+                availableValuesCell.setAttribute('grid-column', '3');
+                availableValuesCell.innerText = m.enum ? m.enum.join(', ') : '-';
+
+                const descriptionCell = document.createElement('vscode-data-grid-cell');
+                descriptionCell.setAttribute('grid-column', '4');
+                descriptionCell.innerText = m.description || '-';
+
+                row.append(keyCell, defaultValueCell, availableValuesCell, descriptionCell);
+                noteMetadataGridBlock.appendChild(row);
             });
         </script>
     </body>
