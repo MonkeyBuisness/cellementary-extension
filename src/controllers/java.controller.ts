@@ -142,7 +142,22 @@ export class JavaController extends NotebookController implements OnControllerIn
     }
 
     public cellMetadata(): MetadataField[] | undefined {
-        return;
+        return [
+            {
+                key:         JavaController._importMeta,
+                description: 'list of imported packages divided by ;\nEx: com.pkg1;com.pkg2;com.company.pkg3'
+            },
+            {
+                key:         JavaController._isExecutableClassMeta,
+                description: 'set "true" if the cell should be compiled and run, and "false" if not',
+                enum:        ['true', 'false']
+            },
+            {
+                key:         JavaController._mainClassMeta,
+                description: 'name of the main class in this cell',
+                default:     JavaController._defaultMainClass
+            },
+        ];
     }
 
     public notebookMetadata(): MetadataField[] | undefined {
@@ -159,6 +174,7 @@ export class JavaController extends NotebookController implements OnControllerIn
         const importMeta = (ex.cell.metadata || {})[JavaController._importMeta] as string;
         if (importMeta) {
             const packages: string[] = importMeta.split(';');
+            packages.forEach(p => p.trim());
             const importCells = ex.notebook
                 .getCells()
                 .filter(c => c.index !== ex.cellIndex)
