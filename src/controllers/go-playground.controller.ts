@@ -74,7 +74,9 @@ export class GoPlaygroundController extends NotebookController implements OnCont
 
         let response: PlaygroundCompileResponse | undefined;
         try {
-            response = await GoPlaygroundController._sendCompileBody(request);
+            const urlMetadata = ex.notebook.metadata[GoPlaygroundController._compileURLMeta];
+            const url = urlMetadata || GoPlaygroundController._compileURL;
+            response = await GoPlaygroundController._sendCompileBody(url, request);
         } catch(e: any) {
             if (e.type && e.type === 'aborted') {
                 ex.appendTextOutput(['Canceled']);
@@ -136,8 +138,8 @@ export class GoPlaygroundController extends NotebookController implements OnCont
         };
     }
 
-    private static async _sendCompileBody(req: RequestInit) : Promise<PlaygroundCompileResponse> {
-        const response = await fetch(GoPlaygroundController._compileURL, req);
+    private static async _sendCompileBody(url: string, req: RequestInit) : Promise<PlaygroundCompileResponse> {
+        const response = await fetch(url, req);
         return await response.json() as Promise<PlaygroundCompileResponse>;
     }
 
