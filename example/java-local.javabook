@@ -1,0 +1,1 @@
+{"cells":[{"content":"package com.cellementary;\n\npublic class Main {\n\n    public static void main(String[] args) {\n        System.out.println(\"Hello world!\");\n    }\n}\n","kind":2,"languageId":"java","executionSummary":{},"metadata":{}}],"metadata":{}}

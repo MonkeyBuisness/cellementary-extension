@@ -2,7 +2,6 @@ import * as fs from 'fs';
 import * as UniqueFileName from 'uniquefilename';
 import { tmpdir } from 'os';
 import * as path from 'path';
-const { spawn } = require('child_process');
 import { v4 as uuidv4 } from 'uuid';
 
 import {
@@ -17,11 +16,12 @@ import {
     TestResult,
     TestStatus
 } from "../renderers/std-test-renderer/types";
-import { MimeTypes } from '../core/types';
+import { KnownLanguageIds, MimeTypes } from '../core/types';
+import { Executor } from '../utils/executor.util';
 
 // GoController represents class implementation for running go code locally.
 export class GoController extends NotebookController implements OnControllerInfo {
-    private static readonly _supportedLanguages: string[] = ['go'];
+    private static readonly _supportedLanguages: string[] = [KnownLanguageIds.go];
     private static readonly _detail: string = 'Run go code on local machine';
     private static readonly _description: string = 'Local go execution';
     private static readonly _controllerId: string = 'go-local';
@@ -76,85 +76,44 @@ export class GoController extends NotebookController implements OnControllerInfo
 
         // exec command.
         let success: boolean | undefined;
-        const commands = execCmd.split(' ');
-        let proc: any = undefined;
-        try {
-            proc = spawn(commands[0], commands.slice(1) || []);
-            const { stdout, stderr } = proc;
-
-            proc.on('error', (e: any) => {
-                success = false;
-                const err = e as Error;
-
-                if (e.code && e.code === 'ENOENT') {
-                    err.message = `could not find '${commands[0]}' executable`;
-                }
-
+        const executor = new Executor(execCmd);
+        ex.token.onCancellationRequested(() => {
+            executor.cancel();
+        });
+        await executor.execute({
+            canceled: () => {
+                ex.appendTextOutput(['Canceled']);
+                success = undefined;
+            },
+            error: (err: Error) => {
                 ex.appendErrorOutput([err]);
-            });
-
-            ex.token.onCancellationRequested(() => {
-                proc.kill();
-            });
-
-            for await (const data of stdout) {
-                if (proc.killed) {
-                    break;
-                }
-
-                if (!data) {
-                    continue;
-                }
-
-                let msg = data.toString();
-
+                success = false;
+            },
+            output: (out: string) => {
                 // check for the clear symbol.
-                if (msg.charCodeAt(0) === 12) {
+                if (out.charCodeAt(0) === 12) {
                     ex.clearOutput();
-                    msg = msg.slice(1);
+                    out = out.slice(1);
                 }
 
                 if (isTest) {
-                    testResponse = testResponse.concat(msg);
-                    continue;
+                    testResponse = testResponse.concat(out);
+                    return;
                 }
 
-                ex.appendTextOutput([msg]);
-            }
-
-            for await (const err of stderr) {
-                if (proc.killed) {
-                    break;
+                ex.appendTextOutput([out]);
+                if (success === undefined) {
+                    success = true;
                 }
-
-                if (!err) {
-                    continue;
-                }
-
-                ex.appendErrorOutput([new Error(err.toString())]);
-                success = false;
             }
+        });
+        fs.unlinkSync(tmpFile);
 
-            if (isTest) {
-                const testResolver = new GoTestResolver(testResponse);
-                const testResult = testResolver.resolve();
-                success = testResult.resultStatus === TestStatus.pass;
-                ex.appendJSONOutput([testResult], MimeTypes.stdTest);
-            }
-        } catch(e: any) {
-            const err = e as Error;
-            ex.appendErrorOutput([err]);
-            success = false;
-        } finally {
-            if (proc?.killed) {
-                ex.appendTextOutput(['Canceled']);
-            }
-
-            fs.unlinkSync(tmpFile);
-        }
-
-        if (!proc?.killed && success === undefined) {
-            success = true;
+        if (isTest) {
+            const testResolver = new GoTestResolver(testResponse);
+            const testResult = testResolver.resolve();
+            success = testResult.resultStatus === TestStatus.pass;
+            ex.appendJSONOutput([testResult], MimeTypes.stdTest);
         }
 
         return success;
