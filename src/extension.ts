@@ -11,6 +11,8 @@ import { UngroupKernelsCmd } from './commands/ungroup-kernels.command';
 import { GoPlaygroundController } from './controllers/go-playground.controller';
 import { GoController } from './controllers/go.controller';
 import { HTMLController } from './controllers/html.controller';
+import { JavaOneController } from './controllers/java-one.controller';
+import { JavaController } from './controllers/java.controller';
 import { NotebookManager } from './core/manager';
 import { NotebookSerializer } from './core/serializer';
 import { ConfigurationService } from './services/configuration.service';
@@ -23,6 +25,7 @@ let cfgService: ConfigurationService;
 const defaultSerializableNotebookTypes: string[] = [
     'golangbook',
     'htmlbook',
+    'javabook',
 ];
 
 export function activate(context: vscode.ExtensionContext) {
@@ -66,6 +69,10 @@ function registerNotebookControllers(m: NotebookManager) {
     m.registerNotebookController(new GoController());
     // register DHTML language controller.
     m.registerNotebookController(new HTMLController());
+    // register java-local language controller.
+    m.registerNotebookController(new JavaController());
+    // register java-one language controller.
+    m.registerNotebookController(new JavaOneController());
 
     // INFO: register your custom controller here... 
 }

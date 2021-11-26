@@ -70,14 +70,16 @@ export class KernelInfoView {
                 name:  "${c.name}",
                 url:   ${c.url === undefined ? undefined : '"' + c.url + '"'},
                 email: ${c.email === undefined ? undefined : '"' + c.email + '"'}
-            }`);  
-        const cellMetadata = controllerInfo.cellMetadata?.map(m => 
+            }`);
+        controllerInfo.cellMetadata?.forEach(m => m.description = KernelInfoView._escapeString(m.description));
+        const cellMetadata = controllerInfo.cellMetadata?.map(m =>
             `{
                 key:         "${m.key}",
                 default:     ${m.default === undefined ? undefined : '"' + m.default + '"'},
                 description: ${m.description === undefined ? undefined : '"' + m.description + '"'},
                 enum:        ${m.enum === undefined ? undefined : "[" + m.enum.map(e => '"' + e + '"').join(',') + "]"}
             }`);
+        controllerInfo.notebookMetadata?.forEach(m => m.description = KernelInfoView._escapeString(m.description));
         const notebookMetadata = controllerInfo.notebookMetadata?.map(m => 
             `{
                 key:         "${m.key}",
@@ -417,5 +419,12 @@ export class KernelInfoView {
         </script>
     </body>
 </html>`;
+    }
+
+    private static _escapeString(s?: string) : string | undefined {
+        return s?.replace(/[\r\n]+/g, '\\n')
+                ?.replace(/"+/g, '\\"')
+                ?.replace(/'+/g, "\\'")
+                ?.replace(/`+/g, '\\`');
     }
 }

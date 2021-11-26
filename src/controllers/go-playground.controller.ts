@@ -11,7 +11,7 @@ import {
     OnControllerInfo
 } from '../core/controller';
 import { GoTestResolver } from './go.controller';
-import { MimeTypes } from '../core/types';
+import { KnownLanguageIds, MimeTypes } from '../core/types';
 
 enum PlaygroundEventKind {
     stdoutKind = 'stdout',
@@ -34,7 +34,7 @@ interface PlaygroundEvent {
 }
 
 export class GoPlaygroundController extends NotebookController implements OnControllerInfo {
-    private static readonly _supportedLanguages: string[] = ['go'];
+    private static readonly _supportedLanguages: string[] = [KnownLanguageIds.go];
     private static readonly _detail: string = 'Request to the https://play.golang.org/compile';
     private static readonly _description: string = 'Remote go execution';
     private static readonly _controllerId: string = 'go-playground';
@@ -130,7 +130,7 @@ export class GoPlaygroundController extends NotebookController implements OnCont
 
         return {
             headers: {
-                'content-type': 'application/x-www-form-urlencoded'
+                'Content-Type': 'application/x-www-form-urlencoded'
             },
             method:  'POST',
             body:    encodedParams,
