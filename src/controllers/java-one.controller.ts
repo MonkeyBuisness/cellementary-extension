@@ -9,7 +9,7 @@ import {
     NotebookController,
     OnControllerInfo
 } from '../core/controller';
-import { KnownLanguageIds, MimeTypes } from '../core/types';
+import { KnownLanguageIds } from '../core/types';
 
 interface JavaOneCompileResponse {
     exception?: string;
