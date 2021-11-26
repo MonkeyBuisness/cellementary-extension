@@ -64,7 +64,7 @@ export class GoController extends NotebookController implements OnControllerInfo
 
         // save .go file into tmp dir.
         const uuid = uuidv4();
-        let tmpFileNamePattern = `notebook${uuid}}`;
+        let tmpFileNamePattern = `notebook${uuid}`;
         const isTest = execCmd.includes('go test');
         if (isTest) {
             tmpFileNamePattern = tmpFileNamePattern.concat('_test');
