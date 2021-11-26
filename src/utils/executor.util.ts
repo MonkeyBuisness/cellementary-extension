@@ -5,7 +5,7 @@ import { waitUntil, WAIT_FOREVER } from 'async-wait-until';
 // Executor represents class to execute commands with arguments locally.
 export class Executor {
     private static readonly _canceledErr = 'canceled';
-    private readonly _cmds: string[] = [];
+    private _cmds: string[] = [];
     private _proc?: any;
     private _stderrStreamFinished: boolean = false;
     private _stdoutStreamFinished: boolean = false;
@@ -15,9 +15,16 @@ export class Executor {
         this._cmds = cmd.split(' ');
     }
 
+    public replaceCMD(searchCmd: string, replacementCmd: string) : Executor {
+        this._cmds = this._cmds.map(c => c === searchCmd ? replacementCmd : c);
+
+        return this;
+    }
+
     public async execute(h?: ExecutionHandler) : Promise<void> {
         try {
-            this._proc = spawn(this._cmds[0], this._cmds.slice(1) || []);
+            const args: any[] = (this._cmds.slice(1) || []);
+            this._proc = spawn(this._cmds[0], args);
             this._proc.on('error', (e: any) => {
                 const err = e as Error;
 
@@ -74,7 +81,7 @@ export class Executor {
     }
 
     private async _procStateChanged() : Promise<void> {
-        await waitUntil(() => (this._proc?.killed)
+        await waitUntil(() => (this._canceled)
             || (this._stderrStreamFinished && this._stdoutStreamFinished), {
             timeout: WAIT_FOREVER
         });

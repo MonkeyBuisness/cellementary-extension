@@ -2,7 +2,7 @@
   "name": "cellementary",
   "displayName": "Cellementary",
   "description": "All Visual Studio Code cell kernels in one extension!",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "engines": {
     "vscode": "^1.62.0"
   },
@@ -55,7 +55,9 @@
     "onNotebookEditor:htmlbook",
     "onNotebook:htmlbook",
     "onNotebookEditor:javabook",
-    "onNotebook:javabook"
+    "onNotebook:javabook",
+    "onNotebookEditor:sqlitebook",
+    "onNotebook:sqlitebook"
   ],
   "icon": "resources/icon.png",
   "contributes": {
@@ -122,6 +124,15 @@
             "filenamePattern": "*.javabook"
           }
         ]
+      },
+      {
+        "type": "sqlitebook",
+        "displayName": "SQLite book",
+        "selector": [
+          {
+            "filenamePattern": "*.sqlitebook"
+          }
+        ]
       }
     ],
     "notebookRenderer": [
@@ -155,6 +166,14 @@
         "displayName": "Dynamic HTML renderer",
         "mimeTypes": [
           "text/html"
+        ]
+      },
+      {
+        "id": "sql-table-renderer",
+        "entrypoint": "./out/renderers/sql-table-renderer.js",
+        "displayName": "SQL table renderer",
+        "mimeTypes": [
+          "application/cellementary.sql.table"
         ]
       }
     ],
