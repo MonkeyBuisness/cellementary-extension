@@ -156,7 +156,9 @@ You can find a list of VS Code known language identifiers [here](https://github.
 
 - Update the `"version"` tag value in the `package.json` file.
 - If you've added a new controller, add the `*.*book` file to the `example` folder.
-- Update the `Supported languages` section in the `README.md` file (if necessary).
+- Update the `Supported language kernels` section in the `README.md` file (if necessary).
+- Write your changes to the `CHANGELOG.md` file in the `[Unreleased]` section.
+- Fell free to add info about you to the `"contributors"` sections in the `package.json` file.
 - Create a new PR with all changes.
 
 ## Thanks!

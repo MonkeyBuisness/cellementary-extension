@@ -2,7 +2,7 @@
   "name": "cellementary",
   "displayName": "Cellementary",
   "description": "All Visual Studio Code cell kernels in one extension!",
-  "version": "0.0.1",
+  "version": "0.3.0",
   "engines": {
     "vscode": "^1.62.0"
   },
