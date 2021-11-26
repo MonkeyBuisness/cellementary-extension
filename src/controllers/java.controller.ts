@@ -1,4 +1,3 @@
-import * as vscode from 'vscode';
 import * as fs from 'fs';
 import { tmpdir } from 'os';
 import { v4 as uuidv4 } from 'uuid';
@@ -24,11 +23,12 @@ export class JavaController extends NotebookController implements OnControllerIn
     private static readonly _label: string = 'Java Local';
     private static readonly _compileCmd = 'javac -d {classDir} -cp {classDir} {path}';
     private static readonly _runCmd = 'java -cp {classDir} {pkg}{class}';
-    private static readonly _mainClassMeta: string = 'main-class';
-    private static readonly _defaultMainClass: string = 'Main';
+    private static readonly _fileNameMeta: string = 'file-name';
+    private static readonly _defaultFileName: string = 'Main';
     private static readonly _pkgNameRegex: RegExp = RegExp('package\\s+([\\w\\.]+);');
     private static readonly _isExecutableClassMeta: string = 'is-executable';
     private static readonly _importMeta: string = 'import';
+    private static readonly _javaFileExt: string = '.java';
 
     constructor() {
         super(
@@ -78,11 +78,7 @@ export class JavaController extends NotebookController implements OnControllerIn
         }
 
         // detect main class name.
-        let mainClass: string = (ex.cell.metadata || {})[JavaController._mainClassMeta];
-        if (!mainClass) {
-            mainClass = JavaController._defaultMainClass;
-        }
-        mainClass = mainClass.trim();
+        const mainClass: string = JavaController._fileName(ex.cell.metadata);
 
         // create .java files.
         let tmpFiles: string[] = [];
@@ -153,9 +149,9 @@ export class JavaController extends NotebookController implements OnControllerIn
                 enum:        ['true', 'false']
             },
             {
-                key:         JavaController._mainClassMeta,
-                description: 'name of the main class in this cell',
-                default:     JavaController._defaultMainClass
+                key:         JavaController._fileNameMeta,
+                description: 'name of the java file for this class',
+                default:     JavaController._defaultFileName
             },
         ];
     }
@@ -178,11 +174,11 @@ export class JavaController extends NotebookController implements OnControllerIn
             const importCells = ex.notebook
                 .getCells()
                 .filter(c => c.index !== ex.cellIndex)
-                .filter(c => c.metadata && c.metadata[JavaController._mainClassMeta])
+                .filter(c => c.metadata && c.metadata[JavaController._fileNameMeta])
                 .filter(c => packages.includes(JavaController._pkgName(c.document.getText()) || ''));
 
             importCells.forEach(c => {
-                const cellMainClass = (c.metadata || {})[JavaController._mainClassMeta] as string;
+                const cellMainClass = JavaController._fileName(c.metadata);
                 tmpFilesMap.set(`${cellMainClass}.java`, c.document.getText());
             });
         }
@@ -247,8 +243,8 @@ export class JavaController extends NotebookController implements OnControllerIn
             canceled: () => {
                 canceled = true;
             },
-            error: (err: Error) => {
-                throw err;
+            error: (err: Error) => {                
+                ex.appendErrorOutput([err]);
             },
             output: (out: string) => {
                 ex.appendTextOutput([out]);
@@ -261,5 +257,18 @@ export class JavaController extends NotebookController implements OnControllerIn
     private static _pkgName(javaContent: string) : string | undefined {
         const regArray = JavaController._pkgNameRegex.exec(javaContent);
         return regArray?.find(ex => !ex.includes('package'));
+    }
+
+    private static _fileName(metadata?: { [key: string]: any }) : string {
+        let fileName: string = (metadata || {})[JavaController._fileNameMeta];
+        if (!fileName) {
+            fileName = JavaController._defaultFileName;
+        }
+        fileName = fileName.trim();
+        if (fileName.endsWith(JavaController._javaFileExt)) {
+            fileName = fileName.slice(0, -JavaController._javaFileExt.length);
+        }
+
+        return fileName;
     }
 }
