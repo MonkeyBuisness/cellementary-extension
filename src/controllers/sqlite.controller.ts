@@ -179,29 +179,3 @@ export class SQLiteController extends NotebookController implements OnController
         return tables;
     }
 }
-
-
-/*
-
-Company name  Developer name  Skills            \n
-------------  --------------  ------------------\n
-Google        Paula           Frontend Developer\n
-Google        Peter           Java Developer    \n
-Microsoft     Alex            Swift Developer   \n
-
-*/
-
-/*
-
-Company name  Developer name  Skills            \n
-------------  --------------  ------------------\n
-Google        Paula           Frontend Developer\n
-Google        Peter           Java Developer    \n
-Microsoft     Alex            Swift Developer   \n
-Company name  Developer name  Skills            \n
-------------  --------------  ------------------\n
-Google        Paula           Frontend Developer\n
-Google        Peter           Java Developer    \n
-Microsoft     Alex            Swift Developer   \n
-
-*/

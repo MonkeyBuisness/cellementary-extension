@@ -10,6 +10,7 @@ export class Executor {
     private _stderrStreamFinished: boolean = false;
     private _stdoutStreamFinished: boolean = false;
     private _canceled: boolean = false;
+    private _env?: {[key: string]: string};
 
     constructor(cmd: string) {
         this._cmds = cmd.split(' ');
@@ -17,14 +18,20 @@ export class Executor {
 
     public replaceCMD(searchCmd: string, replacementCmd: string) : Executor {
         this._cmds = this._cmds.map(c => c === searchCmd ? replacementCmd : c);
+        return this;
+    }
 
+    public setENV(env: {[key: string]: string}) : Executor {
+        this._env = env;
         return this;
     }
 
     public async execute(h?: ExecutionHandler) : Promise<void> {
         try {
             const args: any[] = (this._cmds.slice(1) || []);
-            this._proc = spawn(this._cmds[0], args);
+            this._proc = spawn(this._cmds[0], args, {
+                env: this._env || {}
+            });
             this._proc.on('error', (e: any) => {
                 const err = e as Error;
 

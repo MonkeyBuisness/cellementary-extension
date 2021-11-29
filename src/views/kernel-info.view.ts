@@ -78,7 +78,8 @@ export class KernelInfoView {
                 key:         "${m.key}",
                 default:     ${m.default === undefined ? undefined : '"' + m.default + '"'},
                 description: ${m.description === undefined ? undefined : '"' + m.description + '"'},
-                enum:        ${m.enum === undefined ? undefined : "[" + m.enum.map(e => '"' + e + '"').join(',') + "]"}
+                enum:        ${m.enum === undefined ? undefined : "[" + m.enum.map(e => '"' + e + '"').join(',') + "]"},
+                required:    ${m.required === undefined ? undefined : m.required}
             }`);
         controllerInfo.notebookMetadata?.forEach(m => m.description = escapeString(m.description));
         const notebookMetadata = controllerInfo.notebookMetadata?.map(m => 
@@ -86,7 +87,8 @@ export class KernelInfoView {
                 key:         "${m.key}",
                 default:     ${m.default === undefined ? undefined : '"' + m.default + '"'},
                 description: ${m.description === undefined ? undefined : '"' + m.description + '"'},
-                enum:        ${m.enum === undefined ? undefined : "[" + m.enum.map(e => '"' + e + '"').join(',') + "]"}
+                enum:        ${m.enum === undefined ? undefined : "[" + m.enum.map(e => '"' + e + '"').join(',') + "]"},
+                required:    ${m.required === undefined ? undefined : m.required}
             }`);
         
         let activeTabId: string = 'tab-description';
@@ -375,6 +377,10 @@ export class KernelInfoView {
                 const keyCell = document.createElement('vscode-data-grid-cell');
                 keyCell.setAttribute('grid-column', '1');
                 keyCell.innerText = m.key;
+                if (m.required !== undefined) {
+                    keyCell.innerText = '* ' + m.key;
+                    keyCell.title = 'Required';
+                }
 
                 const defaultValueCell = document.createElement('vscode-data-grid-cell');
                 defaultValueCell.setAttribute('grid-column', '2');
@@ -401,6 +407,10 @@ export class KernelInfoView {
                 const keyCell = document.createElement('vscode-data-grid-cell');
                 keyCell.setAttribute('grid-column', '1');
                 keyCell.innerText = m.key;
+                if (m.required !== undefined) {
+                    keyCell.innerText = '* ' + m.key;
+                    keyCell.title = 'Required';
+                }
 
                 const defaultValueCell = document.createElement('vscode-data-grid-cell');
                 defaultValueCell.setAttribute('grid-column', '2');

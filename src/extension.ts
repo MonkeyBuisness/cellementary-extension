@@ -13,6 +13,7 @@ import { GoController } from './controllers/go.controller';
 import { HTMLController } from './controllers/html.controller';
 import { JavaOneController } from './controllers/java-one.controller';
 import { JavaController } from './controllers/java.controller';
+import { MySQLController } from './controllers/mysql.controller';
 import { SQLiteController } from './controllers/sqlite.controller';
 import { NotebookManager } from './core/manager';
 import { NotebookSerializer } from './core/serializer';
@@ -28,6 +29,7 @@ const defaultSerializableNotebookTypes: string[] = [
     'htmlbook',
     'javabook',
     'sqlitebook',
+    'mysqlbook',
 ];
 
 export function activate(context: vscode.ExtensionContext) {
@@ -77,6 +79,8 @@ function registerNotebookControllers(m: NotebookManager) {
     m.registerNotebookController(new JavaOneController());
     // register sqlite language controller.
     m.registerNotebookController(new SQLiteController());
+     // register mysql language controller.
+     m.registerNotebookController(new MySQLController());
 
     // INFO: register your custom controller here... 
 }
