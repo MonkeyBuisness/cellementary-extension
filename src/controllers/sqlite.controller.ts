@@ -1,5 +1,4 @@
 import * as fs from 'fs';
-import * as UniqueFileName from 'uniquefilename';
 import { tmpdir } from 'os';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -13,7 +12,7 @@ import {
 } from "../core/controller";
 import { KnownLanguageIds, MimeTypes } from '../core/types';
 import { Executor } from '../utils/executor.util';
-import { escapeString, EscapeSymol } from '../utils/string.util';
+import { JSONSet, SQLTableResult } from '../renderers/sql-table-renderer/types';
 
 // SQLiteController represents class implementation for running SQLite code locally.
 export class SQLiteController extends NotebookController implements OnControllerInfo {
@@ -101,7 +100,12 @@ export class SQLiteController extends NotebookController implements OnController
     }
 
     public cellMetadata(): MetadataField[] | undefined {
-        return;
+        return [
+            {
+                key:         SQLiteController._dbPathMeta,
+                description: 'path to the local sqlite db file to work with'
+            }
+        ];
     }
 
     public notebookMetadata(): MetadataField[] | undefined {
@@ -112,7 +116,7 @@ export class SQLiteController extends NotebookController implements OnController
         // run command.
         const executor = new Executor(SQLiteController._execCmd)
             .replaceCMD('{db}', dbPath)
-            .replaceCMD('{sql}', ex.cell.content);
+            .replaceCMD('{sql}', `/**/${ex.cell.content}`);
         ex.token.onCancellationRequested(() => {
             executor.cancel();
         });
@@ -125,10 +129,79 @@ export class SQLiteController extends NotebookController implements OnController
                throw err;
             },
             output: (out: string) => {
-                ex.appendTextOutput([out]);
+                const res = SQLiteController._parseSQlTableResult(out);
+                ex.appendJSONOutput(res, MimeTypes.sqlTable);
             }
         });
         
         return canceled;
     }
+
+    private static _parseSQlTableResult(data: string) : SQLTableResult[] {
+        const rows = data.split('\n');
+        const newTablesIndexes: number[] = [];
+        rows.forEach((r, index) => {
+            const columns = r.split('  ');
+            const isDelimiterRow = columns.every(c => c.startsWith('-'));
+            if (isDelimiterRow) {
+                newTablesIndexes.push(index);
+            }
+        });
+        const tables: SQLTableResult[] = [];
+        newTablesIndexes.forEach((i, index) => {
+            const tableRes: SQLTableResult = {
+                columns: new JSONSet(),
+                rows:    {},
+            };
+
+            const rws = rows.slice(i - 1,
+                index < newTablesIndexes.length - 1 ? newTablesIndexes[index + 1] - 1 : undefined);
+            let nameColumnsStr = rws[0].trim();
+            const dividers = rws[1].split('  ');
+            const rowsData = rws.slice(2).filter(r => r);
+            dividers.forEach(d => {
+                const columnName = nameColumnsStr.slice(0, d.length).trim();
+                nameColumnsStr = nameColumnsStr.slice(d.length).trim();
+                tableRes.columns!.add(columnName);
+    
+                const rowData: string[] = [];
+                for (let i = 0; i < rowsData.length; i++) {
+                    const data = rowsData[i].slice(0, d.length).trim();
+                    rowData.push(data);
+                    rowsData[i] = rowsData[i].slice(d.length).trim();
+                }
+                tableRes.rows![columnName] = rowData;
+            });
+
+            tables.push(tableRes);
+        });
+
+        return tables;
+    }
 }
+
+
+/*
+
+Company name  Developer name  Skills            \n
+------------  --------------  ------------------\n
+Google        Paula           Frontend Developer\n
+Google        Peter           Java Developer    \n
+Microsoft     Alex            Swift Developer   \n
+
+*/
+
+/*
+
+Company name  Developer name  Skills            \n
+------------  --------------  ------------------\n
+Google        Paula           Frontend Developer\n
+Google        Peter           Java Developer    \n
+Microsoft     Alex            Swift Developer   \n
+Company name  Developer name  Skills            \n
+------------  --------------  ------------------\n
+Google        Paula           Frontend Developer\n
+Google        Peter           Java Developer    \n
+Microsoft     Alex            Swift Developer   \n
+
+*/

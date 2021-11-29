@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { MetadataField, Contributor, ControllerInfo } from '../core/controller';
+import { ControllerInfo } from '../core/controller';
 import { getUri } from './utils';
 import { escapeString } from '../utils/string.util';
 
