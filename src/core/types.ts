@@ -3,7 +3,8 @@ export enum MimeTypes {
     stdError  = 'application/vnd.code.notebook.error',
     stdTest   = 'application/cellementary.test',
     plainText = 'text/plain',
-    html      = 'text/html'
+    html      = 'text/html',
+    sqlTable  = 'application/cellementary.sql.table'
 }
 
 // Configuration contains available extension configurations.

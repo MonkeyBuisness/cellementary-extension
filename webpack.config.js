@@ -118,6 +118,12 @@ module.exports = (env, argv) => [
         target:  'web',
         library: 'module'
     }),
+    makeConfig(argv, {
+        entry:   './src/renderers/sql-table-renderer/renderer.ts',
+        out:     './out/renderers/sql-table-renderer.js',
+        target:  'web',
+        library: 'module'
+    }),
 
     // INFO: insert your custom renderers here...
 ];

@@ -2,8 +2,9 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { MetadataField, Contributor, ControllerInfo } from '../core/controller';
+import { ControllerInfo } from '../core/controller';
 import { getUri } from './utils';
+import { escapeString } from '../utils/string.util';
 
 export class KernelInfoView {
     private _disposables: vscode.Disposable[] = [];
@@ -71,7 +72,7 @@ export class KernelInfoView {
                 url:   ${c.url === undefined ? undefined : '"' + c.url + '"'},
                 email: ${c.email === undefined ? undefined : '"' + c.email + '"'}
             }`);
-        controllerInfo.cellMetadata?.forEach(m => m.description = KernelInfoView._escapeString(m.description));
+        controllerInfo.cellMetadata?.forEach(m => m.description = escapeString(m.description));
         const cellMetadata = controllerInfo.cellMetadata?.map(m =>
             `{
                 key:         "${m.key}",
@@ -79,7 +80,7 @@ export class KernelInfoView {
                 description: ${m.description === undefined ? undefined : '"' + m.description + '"'},
                 enum:        ${m.enum === undefined ? undefined : "[" + m.enum.map(e => '"' + e + '"').join(',') + "]"}
             }`);
-        controllerInfo.notebookMetadata?.forEach(m => m.description = KernelInfoView._escapeString(m.description));
+        controllerInfo.notebookMetadata?.forEach(m => m.description = escapeString(m.description));
         const notebookMetadata = controllerInfo.notebookMetadata?.map(m => 
             `{
                 key:         "${m.key}",
@@ -419,12 +420,5 @@ export class KernelInfoView {
         </script>
     </body>
 </html>`;
-    }
-
-    private static _escapeString(s?: string) : string | undefined {
-        return s?.replace(/[\r\n]+/g, '\\n')
-                ?.replace(/"+/g, '\\"')
-                ?.replace(/'+/g, "\\'")
-                ?.replace(/`+/g, '\\`');
     }
 }

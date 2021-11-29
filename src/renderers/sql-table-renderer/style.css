@@ -1,0 +1,21 @@
+.tableName {
+    font-size: var(--vscode-font-size);
+    font-size: var(--vscode-font-size);
+    font-weight: 900;
+    border-bottom: 1px solid var(--vscode-notebookStatusSuccessIcon-foreground);
+    padding: 0 0 10px 0;
+    margin-bottom: 3px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table, .table th, .table td {
+    text-align: start;
+}
+
+.table th {
+    background-color: var(--vscode-notebook-selectedCellBackground);
+}
