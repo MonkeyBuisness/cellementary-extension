@@ -2,7 +2,7 @@
   "name": "cellementary",
   "displayName": "Cellementary",
   "description": "All Visual Studio Code cell kernels in one extension!",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "engines": {
     "vscode": "^1.62.0"
   },
@@ -57,7 +57,9 @@
     "onNotebookEditor:javabook",
     "onNotebook:javabook",
     "onNotebookEditor:sqlitebook",
-    "onNotebook:sqlitebook"
+    "onNotebook:sqlitebook",
+    "onNotebookEditor:mysqlbook",
+    "onNotebook:mysqlbook"
   ],
   "icon": "resources/icon.png",
   "contributes": {
@@ -131,6 +133,15 @@
         "selector": [
           {
             "filenamePattern": "*.sqlitebook"
+          }
+        ]
+      },
+      {
+        "type": "mysqlbook",
+        "displayName": "MySQL book",
+        "selector": [
+          {
+            "filenamePattern": "*.mysqlbook"
           }
         ]
       }
@@ -336,6 +347,7 @@
     "node-abort-controller": "^3.0.1",
     "node-html-parser": "^5.1.0",
     "uniquefilename": "^1.1.2",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "xml2js": "^0.4.23"
   }
 }

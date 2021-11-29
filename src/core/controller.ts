@@ -326,6 +326,11 @@ export interface MetadataField {
      * Key description.
      */
     description?: string;
+
+    /**
+     * Is field required.
+     */
+    required?: boolean;
 }
 
 // isOnControllerInfo checks if object implements OnControllerInfo interface.
