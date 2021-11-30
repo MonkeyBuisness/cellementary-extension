@@ -1,4 +1,4 @@
-export enum EscapeSymol {
+export enum EscapeSymbol {
     newline        = 0,
     carriageReturn = 1,
     doubleQuote    = 2,
@@ -6,30 +6,30 @@ export enum EscapeSymol {
     backtick       = 4
 }
 
-const allEscapeSymbols: EscapeSymol[] = [
-    EscapeSymol.backtick,
-    EscapeSymol.carriageReturn,
-    EscapeSymol.doubleQuote,
-    EscapeSymol.newline,
-    EscapeSymol.singleQuote
+const allEscapeSymbols: EscapeSymbol[] = [
+    EscapeSymbol.backtick,
+    EscapeSymbol.carriageReturn,
+    EscapeSymbol.doubleQuote,
+    EscapeSymbol.newline,
+    EscapeSymbol.singleQuote
 ];
 
-export function escapeString(s?: string, escapeSymbols: EscapeSymol[] = allEscapeSymbols) : string | undefined {
+export function escapeString(s?: string, escapeSymbols: EscapeSymbol[] = allEscapeSymbols) : string | undefined {
     let escapedString: string | undefined = s;
 
     escapeSymbols.forEach(s => {
         switch (s) {
-            case EscapeSymol.backtick:
+            case EscapeSymbol.backtick:
                 escapedString = escapedString?.replace(/`+/g, '\\`');
                 break;
-            case EscapeSymol.carriageReturn:
-            case EscapeSymol.newline:
+            case EscapeSymbol.carriageReturn:
+            case EscapeSymbol.newline:
                 escapedString = escapedString?.replace(/[\r\n]+/g, '\\n');
                 break;
-            case EscapeSymol.doubleQuote:
+            case EscapeSymbol.doubleQuote:
                 escapedString = escapedString?.replace(/"+/g, '\\"');
                 break;
-            case EscapeSymol.singleQuote:
+            case EscapeSymbol.singleQuote:
                 escapedString = escapedString?.replace(/'+/g, "\\'");
                 break;
         }

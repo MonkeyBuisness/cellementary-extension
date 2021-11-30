@@ -20,7 +20,7 @@ interface ReplaceImportsResult {
 // HTMLController represents class implementation for running DHTML locally.
 export class HTMLController extends NotebookController implements OnControllerInfo {
     private static readonly _supportedLanguages: string[] = [
-        KnownLanguageIds.haml,
+        KnownLanguageIds.html,
         KnownLanguageIds.css,
         KnownLanguageIds.javascript
     ];

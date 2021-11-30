@@ -32,7 +32,8 @@
     "notebook",
     "cell",
     "markdown",
-    "education"
+    "education",
+    "notebookRenderer"
   ],
   "maintainers": [
     {
@@ -59,7 +60,9 @@
     "onNotebookEditor:sqlitebook",
     "onNotebook:sqlitebook",
     "onNotebookEditor:mysqlbook",
-    "onNotebook:mysqlbook"
+    "onNotebook:mysqlbook",
+    "onNotebookEditor:mdbook",
+    "onNotebook:mdbook"
   ],
   "icon": "resources/icon.png",
   "contributes": {
@@ -144,6 +147,15 @@
             "filenamePattern": "*.mysqlbook"
           }
         ]
+      },
+      {
+        "type": "mdbook",
+        "displayName": "Markdown book",
+        "selector": [
+          {
+            "filenamePattern": "*.mdbook"
+          }
+        ]
       }
     ],
     "notebookRenderer": [
@@ -185,6 +197,14 @@
         "displayName": "SQL table renderer",
         "mimeTypes": [
           "application/cellementary.sql.table"
+        ]
+      },
+      {
+        "id": "markdown-basic-renderer",
+        "entrypoint": "./out/renderers/markdown-basic-renderer.js",
+        "displayName": "Markdown basic renderer",
+        "mimeTypes": [
+          "application/cellementary.text.markdown"
         ]
       }
     ],
@@ -322,7 +342,7 @@
     "@types/node-fetch": "^2.5.10",
     "@types/uuid": "^8.3.3",
     "@types/vscode": "^1.62.0",
-    "@types/vscode-notebook-renderer": "^1.57.8",
+    "@types/vscode-notebook-renderer": "^1.60.0",
     "@types/webpack-env": "^1.16.0",
     "@typescript-eslint/eslint-plugin": "^4.26.0",
     "@typescript-eslint/parser": "^4.26.0",

@@ -1,0 +1,14 @@
+.mdOutput {
+    box-sizing: border-box;
+}
+
+.mdOutput blockquote {
+    margin: 0 7px 0 5px;
+    padding: 0 16px 0 10px;
+    border-left-width: 5px;
+    border-left-style: solid;
+}
+
+.mdOutput table, th, tr {
+    text-align: start;
+}

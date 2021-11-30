@@ -1,10 +1,11 @@
 // MimeTypes contains available cell output mime types.
 export enum MimeTypes {
-    stdError  = 'application/vnd.code.notebook.error',
-    stdTest   = 'application/cellementary.test',
-    plainText = 'text/plain',
-    html      = 'text/html',
-    sqlTable  = 'application/cellementary.sql.table'
+    stdError    = 'application/vnd.code.notebook.error',
+    stdTest     = 'application/cellementary.test',
+    plainText   = 'text/plain',
+    html        = 'text/html',
+    sqlTable    = 'application/cellementary.sql.table',
+    markdownExt = 'application/cellementary.text.markdown'
 }
 
 // Configuration contains available extension configurations.
