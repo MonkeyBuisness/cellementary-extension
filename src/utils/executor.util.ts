@@ -30,7 +30,7 @@ export class Executor {
         try {
             const args: any[] = (this._cmds.slice(1) || []);
             this._proc = spawn(this._cmds[0], args, {
-                env: this._env || {}
+                env: this._env || process.env,
             });
             this._proc.on('error', (e: any) => {
                 const err = e as Error;

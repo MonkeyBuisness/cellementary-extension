@@ -125,6 +125,12 @@ module.exports = (env, argv) => [
         target:  'web',
         library: 'module'
     }),
+    makeConfig(argv, {
+        entry:   './src/renderers/markdown-basic-renderer/renderer.ts',
+        out:     './out/renderers/markdown-basic-renderer.js',
+        target:  'web',
+        library: 'module'
+    }),
 
     // INFO: insert your custom renderers here...
 ];
