@@ -16,6 +16,7 @@ import { JavaController } from './controllers/java.controller';
 import { MarkdownController } from './controllers/markdown.controller';
 import { MySQLController } from './controllers/mysql.controller';
 import { SQLiteController } from './controllers/sqlite.controller';
+import { PyController } from './controllers/py.controller';
 import { NotebookManager } from './core/manager';
 import { NotebookSerializer } from './core/serializer';
 import { ConfigurationService } from './services/configuration.service';
@@ -32,6 +33,7 @@ const defaultSerializableNotebookTypes: string[] = [
     'sqlitebook',
     'mysqlbook',
     'mdbook',
+    'pythonbook',
 ];
 
 export function activate(context: vscode.ExtensionContext) {
@@ -65,7 +67,7 @@ function registerNotebookSerializers(m: NotebookManager) {
 
     // register custom serializers.
 
-    // INFO: register your custom serializer here... 
+    // INFO: register your custom serializer here...
 }
 
 function registerNotebookControllers(m: NotebookManager) {
@@ -85,8 +87,10 @@ function registerNotebookControllers(m: NotebookManager) {
     m.registerNotebookController(new MySQLController());
     // register markdown language controller.
     m.registerNotebookController(new MarkdownController());
+    // register Python language controller.
+    m.registerNotebookController(new PyController());
 
-    // INFO: register your custom controller here... 
+    // INFO: register your custom controller here...
 }
 
 function registerCommandHandlers(

@@ -62,7 +62,9 @@
     "onNotebookEditor:mysqlbook",
     "onNotebook:mysqlbook",
     "onNotebookEditor:mdbook",
-    "onNotebook:mdbook"
+    "onNotebook:mdbook",
+    "onNotebookEditor:pythonbook",
+    "onNotebook:pythonbook"
   ],
   "icon": "resources/icon.png",
   "contributes": {
@@ -154,6 +156,15 @@
         "selector": [
           {
             "filenamePattern": "*.mdbook"
+          }
+        ]
+      },
+      {
+        "type": "pythonbook",
+        "displayName": "Python book",
+        "selector": [
+          {
+            "filenamePattern": "*.pybook"
           }
         ]
       }
