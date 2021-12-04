@@ -9,7 +9,7 @@ export interface NotebookCellData {
      * Id of the cell language (like 'python', 'c', 'markdown', 'go', etc).
      */
     languageId: string;
-    
+
     /**
      * Cell content.
      * In most cases, it contains the source code of the cell.
@@ -25,7 +25,7 @@ export interface NotebookCellData {
 
     /**
      * Any additional information about the cell.
-     * May be useful inside a custom language controller to interpret the cell content correctly. 
+     * May be useful inside a custom language controller to interpret the cell content correctly.
      */
     metadata?: { [key: string]: any };
 
@@ -57,31 +57,31 @@ export function convertNotebookCellData(cell: vscode.NotebookCell) : NotebookCel
 // NotebookSerializer represents default serializer implementation
 // to interpretate notebook cells data.
 export class NotebookSerializer implements vscode.NotebookSerializer {
-    
+
     public async deserializeNotebook(content: Uint8Array): Promise<vscode.NotebookData> {
         const contents = new TextDecoder().decode(content);
-    
+
         let rawData: NotebookData | undefined;
         try {
             rawData = <NotebookData>JSON.parse(contents);
         } catch {
             return new vscode.NotebookData([]);
         }
-        
+
         const cells = rawData.cells.map(item => {
             const cellData = new vscode.NotebookCellData(item.kind, item.content, item.languageId);
             cellData.metadata = item.metadata;
 
             return cellData;
         });
-    
+
         const notebookData = new vscode.NotebookData(cells);
         notebookData.metadata = rawData.metadata;
 
         return notebookData;
     }
 
-    public async serializeNotebook(data: vscode.NotebookData): Promise<Uint8Array> {  
+    public async serializeNotebook(data: vscode.NotebookData): Promise<Uint8Array> {
         const cells: NotebookCellData[] = data.cells
             .map<NotebookCellData>((cell: vscode.NotebookCellData) => {
                 return {
@@ -103,12 +103,12 @@ export class NotebookSerializer implements vscode.NotebookSerializer {
 
 // NotebookData represents notebook cell data model.
 export interface NotebookData {
-    
+
     /**
      * The cell data of this notebook data.
      */
     cells: NotebookCellData[];
-    
+
     /**
      * Arbitrary metadata of notebook data.
      */
