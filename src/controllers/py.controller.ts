@@ -1,6 +1,12 @@
 import { v4 as uuid4 } from 'uuid';
 import { spawn } from "child_process";
-import { CellMetadataField, Contributor, NotebookCellExecution, NotebookController, OnControllerInfo } from "../core/controller";
+import {
+    Contributor,
+    MetadataField,
+    NotebookCellExecution,
+    NotebookController,
+    OnControllerInfo,
+} from "../core/controller";
 import * as UniqueFileName from 'uniquefilename';
 import path = require('path');
 import { tmpdir } from 'os';
@@ -15,8 +21,8 @@ export class PyController extends NotebookController implements OnControllerInfo
     private static readonly _notebookType: string = 'pythonbook';
     private static readonly _label: string = 'Python Local';
     private static readonly _execMeta: string = 'execution';
-    private static readonly _execFileArg: string = '';
     private static readonly _defaultExecutionCmd: string = `python`;
+    private static readonly _execFileArg: string = 'xprog';
 
     constructor() {
         super(
@@ -24,6 +30,18 @@ export class PyController extends NotebookController implements OnControllerInfo
             PyController._notebookType,
             PyController._label,
         );
+    }
+    cellMetadata(): MetadataField[] | undefined {
+        return [
+            {
+                key: PyController._execMeta,
+                default: PyController._defaultExecutionCmd,
+                description: `where {${PyController._execFileArg}} is the path to the temporary file to execute`
+            }
+        ];
+    }
+    notebookMetadata(): MetadataField[] | undefined {
+        return;
     }
 
     public supportedLanguages(): string[] | undefined {
@@ -68,16 +86,6 @@ export class PyController extends NotebookController implements OnControllerInfo
 
     public gettingStartedGuide(): string | undefined {
         return 'py-local.md';
-    }
-
-    public metadataFields(): CellMetadataField[] | undefined {
-        return [
-            {
-                key: PyController._execMeta,
-                default: PyController._defaultExecutionCmd,
-                description: `where {${PyController._execFileArg}} is the path to the temporary file to execute`,
-            }
-        ];
     }
 
     public async execute(ex: NotebookCellExecution): Promise<boolean | undefined> {
