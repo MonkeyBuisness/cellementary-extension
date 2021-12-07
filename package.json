@@ -62,7 +62,9 @@
     "onNotebookEditor:mysqlbook",
     "onNotebook:mysqlbook",
     "onNotebookEditor:mdbook",
-    "onNotebook:mdbook"
+    "onNotebook:mdbook",
+    "onNotebookEditor:jsonbook",
+    "onNotebook:jsonbook"
   ],
   "icon": "resources/icon.png",
   "contributes": {
@@ -154,6 +156,15 @@
         "selector": [
           {
             "filenamePattern": "*.mdbook"
+          }
+        ]
+      },
+      {
+        "type": "jsonbook",
+        "displayName": "JSON book",
+        "selector": [
+          {
+            "filenamePattern": "*.jsonbook"
           }
         ]
       }
@@ -364,6 +375,7 @@
     "@vscode/codicons": "^0.0.26",
     "@vscode/webview-ui-toolkit": "^0.8.4",
     "async-wait-until": "^2.0.9",
+    "jsonc-parser": "^3.0.0",
     "node-abort-controller": "^3.0.1",
     "node-html-parser": "^5.1.0",
     "uniquefilename": "^1.1.2",
