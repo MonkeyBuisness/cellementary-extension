@@ -29,7 +29,7 @@ export class EditCellScriptCmd implements CommandHandler {
         }
         const noteData = await notebookSerializer.deserializeNotebook(docContent);
         const editingCell = noteData.cells[notebookCell.index];
-        const scriptMeta = (metadata || {})[ReservedCellMetaKey.script] as VScript;
+        const scriptMeta: VScript | undefined = (metadata || {})[ReservedCellMetaKey.script];
 
         // save script content to the tmp file.
         const uuid = uuidv4();
@@ -39,7 +39,7 @@ export class EditCellScriptCmd implements CommandHandler {
                 recursive: true,
             });
             tmpFile = path.join(tmpFile, 'cell_script.js');
-            fs.writeFileSync(tmpFile, scriptMeta.code || defaultScriptCode);
+            fs.writeFileSync(tmpFile, scriptMeta?.code || defaultScriptCode);
         } catch (e: any) {
             vscode.window.showErrorMessage(`Could not open tmp file to edit cell script:\n${e}`);
             return;
@@ -73,10 +73,14 @@ const defaultScriptCode = `// Cell execution script.
  * This function will be automatically called before cell execution.
  * Can be undefined if you don't want to catch the "before" event.
  * 
- * @param {string} content cell's content.
- * @param {ScriptContextOutput} out context output.
+ * @param {Oject} cell                   - Executing cell.
+ * @param {string} cell.content          - Cell's content.
+ * @param {number} cell.index            - Cell's index.
+ * @param {string} cell.languageId       - Cell's language Id.
+ * @param {(Object|undefined)} cell.meta - Cell's metadata.
+ * @param {ScriptContextOutput} out      - Context output object.
  */
-before = (content, out) => {
+before = (cell, out) => {
     // write your code here...
 };
 
@@ -84,11 +88,15 @@ before = (content, out) => {
  * This function will be automatically called after cell execution.
  * Can be undefined if you don't want to catch the "after" event.
  * 
- * @param {string} content cell's content.
- * @param {ScriptContextOutput} out context output.
- * @param {boolean | undefined} success status of cell execution.
+ * @param {Oject} cell                   - Executing cell.
+ * @param {string} cell.content          - Cell's content.
+ * @param {number} cell.index            - Cell's index.
+ * @param {string} cell.languageId       - Cell's language Id.
+ * @param {(Object|undefined)} cell.meta - Cell's metadata.
+ * @param {ScriptContextOutput} out      - Context output.
+ * @param {boolean | undefined} success  - Status of cell execution.
  */
-after = (content, out, success) => {
+after = (cell, out, success) => {
     // write your code here...
 };
 
@@ -99,26 +107,26 @@ class ScriptContextOutput {
     /**
      * Appends text output.
      *
-     * @param {string[]} values array of strings to append.
-     * @param {(string|undefined)} mime custom mime type. Use mimes() func to get list of all known extension mime types.
-     * @param {(Object|undefined)} meta metadata of the output. 
+     * @param {string[]} values         - Array of strings to append.
+     * @param {(string|undefined)} mime - Custom mime type. Use mimes() func to get list of all known extension mime types.
+     * @param {(Object|undefined)} meta - Metadata of the output. 
      */
     text(values, mime, meta) {}
 
     /**
      * Appends json output.
      *
-     * @param {any[]} values array of objects to append.
-     * @param {(string|undefined)} mime custom mime type. Use mimes() func to get list of all known extension mime types.
-     * @param {(Object|undefined)} meta metadata of the output. 
+     * @param {any[]} values            - Array of objects to append.
+     * @param {(string|undefined)} mime - Custom mime type. Use mimes() func to get list of all known extension mime types.
+     * @param {(Object|undefined)} meta - Metadata of the output. 
      */
     json(values, mime, meta) {}
 
     /**
      * Appends error output.
      *
-     * @param {Error[]} values array of errors to append.
-     * @param {(Object|undefined)} meta metadata of the output. 
+     * @param {Error[]} values          - Array of errors to append.
+     * @param {(Object|undefined)} meta - Metadata of the output. 
      */
     error(errs, metadata) {}
 

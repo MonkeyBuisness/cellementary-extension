@@ -71,7 +71,7 @@ export abstract class NotebookController {
             let scriptExecutor: ScriptExecutor | undefined = undefined;
             const scriptMeta = (cell.metadata || {})[ReservedCellMetaKey.script] as VScript;
             if (scriptMeta !== undefined) {
-                scriptExecutor = new ScriptExecutor(cell.document.getText(), scriptMeta, cellExecution);
+                scriptExecutor = new ScriptExecutor(scriptMeta, cellExecution);
             }
             scriptExecutor?.beforeExecution();
 
@@ -361,15 +361,21 @@ export function isOnControllerInfo(object: any): object is OnControllerInfo {
 class ScriptExecutor {
     private _ctx: ScriptContext;
     private _output: ScriptContextOutput;
+    private _cell: ScriptCell;
     
     constructor(
-        private cellContent: string,
         code: VScript,
-        execution: NotebookCellExecution) {
+        private execution: NotebookCellExecution) {
         this._ctx = {
             mimes: () => MimeTypes,
         } as ScriptContext;
-        this._output = new ScriptContextOutput(execution);
+        this._output = new ScriptContextOutput(this.execution);
+        this._cell = {
+            content:    execution.cell.content,
+            index:      execution.cellIndex,
+            languageId: execution.cell.languageId,
+            meta:       execution.cell.metadata
+        };
         try {
             const script = new Script(code.code);
             script.runInContext(createContext(this._ctx, {
@@ -385,7 +391,7 @@ class ScriptExecutor {
     public beforeExecution() : void {
         if (this._ctx.before) {
             try {
-                this._ctx.before(this.cellContent, this._output);
+                this._ctx.before(this._cell, this._output);
             } catch(e: any) {
                 vscode.window.showErrorMessage(`Could not execute "before" script:\n${e}`);
             }
@@ -395,7 +401,7 @@ class ScriptExecutor {
     public afterExecution(success?: boolean) : void {
         if (this._ctx.after) {
             try {
-                this._ctx.after(this.cellContent, this._output, success);
+                this._ctx.after(this._cell, this._output, success);
             } catch(e: any) {
                 vscode.window.showErrorMessage(`Could not execute "after" script:\n${e}`);
             }
@@ -404,9 +410,16 @@ class ScriptExecutor {
 }
 
 interface ScriptContext {
-    before?: (content: string, out: ScriptContextOutput) => void;
-    after?: (content: string, out: ScriptContextOutput, success?: boolean) => void;
+    before?: (cell: ScriptCell, out: ScriptContextOutput) => void;
+    after?: (cell: ScriptCell, out: ScriptContextOutput, success?: boolean) => void;
     mimes() : { [key: string] : string };
+}
+
+interface ScriptCell {
+    content:    string;
+    index:      number;
+    languageId: string;
+    meta?:      { [key: string]: any };
 }
 
 class ScriptContextOutput {
