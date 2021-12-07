@@ -25,7 +25,8 @@ export interface NotebookCellData {
 
     /**
      * Any additional information about the cell.
-     * May be useful inside a custom language controller to interpret the cell content correctly. 
+     * May be useful inside a custom language controller to interpret the cell content correctly.
+     * NOTE: your custom key must not start with the `$` character, because it's reserved for system purposes. 
      */
     metadata?: { [key: string]: any };
 
@@ -49,8 +50,7 @@ export function convertNotebookCellData(cell: vscode.NotebookCell) : NotebookCel
         kind:             cell.kind,
         languageId:       cell.document.languageId,
         executionSummary: cell.executionSummary,
-        metadata:         cell.metadata,
-        outputs:          cell.outputs.slice(0),
+        metadata:         cell.metadata
     };
 }
 
@@ -85,11 +85,10 @@ export class NotebookSerializer implements vscode.NotebookSerializer {
         const cells: NotebookCellData[] = data.cells
             .map<NotebookCellData>((cell: vscode.NotebookCellData) => {
                 return {
-                    content:          cell.value,
-                    kind:             cell.kind,
-                    languageId:       cell.languageId,
-                    executionSummary: cell.executionSummary,
-                    metadata:         cell.metadata,
+                    content:    cell.value,
+                    kind:       cell.kind,
+                    languageId: cell.languageId,
+                    metadata:   cell.metadata
                 } as NotebookCellData;
             });
         const notebookData: NotebookData = {

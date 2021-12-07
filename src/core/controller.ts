@@ -1,6 +1,19 @@
 import * as vscode from 'vscode';
+import { Script, createContext } from 'vm';
 
-import { convertNotebookCellData, NotebookCellData } from './serializer';
+import {
+    convertNotebookCellData,
+    NotebookCellData
+} from './serializer';
+
+// VScriptKind contains virtual script kind values.
+export enum VScriptKind {
+    js = 'javascript'
+}
+
+enum ReservedCellMeta {
+    script = '$script'
+}
 
 // NotebookController represents abstract notebook controller class implementation
 // to manage notebook sessions.
@@ -57,8 +70,17 @@ export abstract class NotebookController {
             execution.start(Date.now());
             execution.clearOutput(cell);
 
-            const success = await this.execute(new NotebookCellExecution(execution));
+            const cellExecution = new NotebookCellExecution(execution);
+            let scriptExecutor: ScriptExecutor | undefined = undefined;
+            const scriptMeta = (cell.metadata || {})[ReservedCellMeta.script] as VScript;
+            if (scriptMeta !== undefined) {
+                scriptExecutor = new ScriptExecutor(cell.document.getText(), scriptMeta, cellExecution);
+            }
+            scriptExecutor?.beforeExecution();
 
+            const success = await this.execute(cellExecution);
+
+            scriptExecutor?.afterExecution(success);
             execution.end(success, Date.now());
         });
     }
@@ -333,8 +355,91 @@ export interface MetadataField {
     required?: boolean;
 }
 
+// VScript represents virtual script configuration model.
+export interface VScript {
+
+    /**
+     * The virtual script kind.
+     */
+    kind: VScriptKind;
+
+    /**
+     * The source code of the script.
+     */
+    code: string;
+}
+
 // isOnControllerInfo checks if object implements OnControllerInfo interface.
 export function isOnControllerInfo(object: any): object is OnControllerInfo {
     const int = object as OnControllerInfo;
     return int.contributors !== undefined;
+}
+
+class ScriptExecutor {
+    private _ctx: ScriptContext;
+    private _output: ScriptContextOutput;
+    
+    constructor(
+        private cellContent: string,
+        code: VScript,
+        execution: NotebookCellExecution) {
+        this._ctx = {} as ScriptContext;
+        this._output = new ScriptContextOutput(execution);
+        try {
+            const script = new Script(code.code);
+            script.runInContext(createContext(this._ctx, {
+                codeGeneration: {
+                    wasm: false,
+                },
+            }));
+        } catch (e: any) {
+            vscode.window.showErrorMessage(`Could not compile cell script:\n${e}`);
+        }
+    }
+
+    public beforeExecution() : void {
+        if (this._ctx.before) {
+            try {
+                this._ctx.before(this.cellContent, this._output);
+            } catch(e: any) {
+                vscode.window.showErrorMessage(`Could not execute "before" script:\n${e}`);
+            }
+        }
+    }
+
+    public afterExecution(success?: boolean) : void {
+        if (this._ctx.after) {
+            try {
+                this._ctx.after(this.cellContent, this._output, success);
+            } catch(e: any) {
+                vscode.window.showErrorMessage(`Could not execute "after" script:\n${e}`);
+            }
+        }
+    }
+}
+
+interface ScriptContext {
+    before?: (content: string, out: ScriptContextOutput) => void;
+    after?: (content: string, out: ScriptContextOutput, success?: boolean) => void;
+}
+
+class ScriptContextOutput {
+
+    constructor(private execution: NotebookCellExecution) {}
+
+    public text(values: string[], mime?: string, meta?: { [key: string] : any }) : void {
+        this.execution.appendTextOutput(values, mime, meta);
+    }
+
+    public json(values: any[], mime?: string, meta?: { [key: string] : any }) : void {
+        this.execution.appendJSONOutput(values, mime, meta);
+    }
+
+    public error(errs: Error[], metadata?: { [key: string]: any }) : void {
+        this.execution.appendErrorOutput(errs, metadata);
+    }
+
+    public clear() : void {
+        this.execution.clearOutput();
+    }
 }
