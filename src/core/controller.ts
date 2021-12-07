@@ -1,6 +1,16 @@
 import * as vscode from 'vscode';
+import { Script, createContext } from 'vm';
 
-import { convertNotebookCellData, NotebookCellData } from './serializer';
+import {
+    convertNotebookCellData,
+    NotebookCellData
+} from './serializer';
+import {
+    MimeTypes,
+    ReservedCellMetaKey,
+    VScript
+} from './types';
+
 
 // NotebookController represents abstract notebook controller class implementation
 // to manage notebook sessions.
@@ -57,8 +67,17 @@ export abstract class NotebookController {
             execution.start(Date.now());
             execution.clearOutput(cell);
 
-            const success = await this.execute(new NotebookCellExecution(execution));
+            const cellExecution = new NotebookCellExecution(execution);
+            let scriptExecutor: ScriptExecutor | undefined = undefined;
+            const scriptMeta = (cell.metadata || {})[ReservedCellMetaKey.script] as VScript;
+            if (scriptMeta !== undefined) {
+                scriptExecutor = new ScriptExecutor(scriptMeta, cellExecution);
+            }
+            scriptExecutor?.beforeExecution();
 
+            const success = await this.execute(cellExecution);
+
+            scriptExecutor?.afterExecution(success);
             execution.end(success, Date.now());
         });
     }
@@ -337,4 +356,89 @@ export interface MetadataField {
 export function isOnControllerInfo(object: any): object is OnControllerInfo {
     const int = object as OnControllerInfo;
     return int.contributors !== undefined;
+}
+
+class ScriptExecutor {
+    private _ctx: ScriptContext;
+    private _output: ScriptContextOutput;
+    private _cell: ScriptCell;
+    
+    constructor(
+        code: VScript,
+        private execution: NotebookCellExecution) {
+        this._ctx = {
+            mimes: () => MimeTypes,
+        } as ScriptContext;
+        this._output = new ScriptContextOutput(this.execution);
+        this._cell = {
+            content:    execution.cell.content,
+            index:      execution.cellIndex,
+            languageId: execution.cell.languageId,
+            meta:       execution.cell.metadata
+        };
+        try {
+            const script = new Script(code.code);
+            script.runInContext(createContext(this._ctx, {
+                codeGeneration: {
+                    wasm: false,
+                },
+            }));
+        } catch (e: any) {
+            vscode.window.showErrorMessage(`Could not compile cell script:\n${e}`);
+        }
+    }
+
+    public beforeExecution() : void {
+        if (this._ctx.before) {
+            try {
+                this._ctx.before(this._cell, this._output);
+            } catch(e: any) {
+                vscode.window.showErrorMessage(`Could not execute "before" script:\n${e}`);
+            }
+        }
+    }
+
+    public afterExecution(success?: boolean) : void {
+        if (this._ctx.after) {
+            try {
+                this._ctx.after(this._cell, this._output, success);
+            } catch(e: any) {
+                vscode.window.showErrorMessage(`Could not execute "after" script:\n${e}`);
+            }
+        }
+    }
+}
+
+interface ScriptContext {
+    before?: (cell: ScriptCell, out: ScriptContextOutput) => void;
+    after?: (cell: ScriptCell, out: ScriptContextOutput, success?: boolean) => void;
+    mimes() : { [key: string] : string };
+}
+
+interface ScriptCell {
+    content:    string;
+    index:      number;
+    languageId: string;
+    meta?:      { [key: string]: any };
+}
+
+class ScriptContextOutput {
+
+    constructor(private execution: NotebookCellExecution) {}
+
+    public text(values: string[], mime?: string, meta?: { [key: string] : any }) : void {
+        this.execution.appendTextOutput(values, mime, meta);
+    }
+
+    public json(values: any[], mime?: string, meta?: { [key: string] : any }) : void {
+        this.execution.appendJSONOutput(values, mime, meta);
+    }
+
+    public error(errs: Error[], metadata?: { [key: string]: any }) : void {
+        this.execution.appendErrorOutput(errs, metadata);
+    }
+
+    public clear() : void {
+        this.execution.clearOutput();
+    }
 }

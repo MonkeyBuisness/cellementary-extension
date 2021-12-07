@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { CommandManager } from './commands/command-handler';
 import { DisableKernelCmd } from './commands/disable-kernel.command';
 import { EditCellMetadataCmd } from './commands/edit-cell-metadata.command';
+import { EditCellScriptCmd } from './commands/edit-cell-script.command';
 import { EditNotebookMetadataCmd } from './commands/edit-notebook-metadata.command';
 import { EnableKernelCmd } from './commands/enable-kernel.command';
 import { GroupKernelsByEnableStateCmd } from './commands/group-kernels-by-state.command';
@@ -98,7 +99,10 @@ function registerCommandHandlers(
     kernelsView: KernelsView,
     cfgService: ConfigurationService,
     notebookManager: NotebookManager) {
-    m.registerCommandHandler('cell.editMetadata', new EditCellMetadataCmd());
+    m.registerCommandHandler('cell.editMetadata',
+        new EditCellMetadataCmd(notebookManager));
+    m.registerCommandHandler('cell.editScript',
+        new EditCellScriptCmd(notebookManager));
     m.registerCommandHandler('cellementary.ungroupAll',
         new UngroupKernelsCmd(kernelsView));
     m.registerCommandHandler('cellementary.groupByEnableState',
@@ -111,7 +115,8 @@ function registerCommandHandlers(
         new EnableKernelCmd(cfgService));
     m.registerCommandHandler('cellementary.kernelInfo',
         new ShowKernelInfoCmd(notebookManager));
-    m.registerCommandHandler('notebook.editMetadata', new EditNotebookMetadataCmd());
+    m.registerCommandHandler('notebook.editMetadata',
+        new EditNotebookMetadataCmd(notebookManager));
 }
 
 function registerViews(

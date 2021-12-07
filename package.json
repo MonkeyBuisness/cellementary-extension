@@ -242,6 +242,11 @@
           "command": "cell.editMetadata",
           "group": "inline/output@1",
           "when": "notebookCellType == code"
+        },
+        {
+          "command": "cell.editScript",
+          "group": "inline/output@1",
+          "when": "notebookCellType == code"
         }
       ],
       "notebook/toolbar": [
@@ -289,6 +294,12 @@
         "shortTitle": "Cell metadata",
         "command": "cell.editMetadata",
         "icon": "$(symbol-key)"
+      },
+      {
+        "title": "Edit cell script",
+        "shortTitle": "Cell script",
+        "command": "cell.editScript",
+        "icon": "$(code)"
       },
       {
         "title": "Edit notebook metadata",

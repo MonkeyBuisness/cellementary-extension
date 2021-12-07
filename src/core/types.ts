@@ -14,16 +14,14 @@ export enum Configuration {
     kernelsFilter = 'kernels_filter'
 }
 
-// KernelConfig represents kernels configuration object.
-export interface KernelConfig {
-    kernelType: string;
-    isEnabled:  boolean;
+// VScriptKind contains virtual script kind values.
+export enum VScriptKind {
+    js = 'javascript'
 }
 
-// ThemeIcon represents theme icon model.
-export interface ThemeIcon {
-    light: string;
-    dark:  string;
+// ReservedCellMetaKey contains reserved cell meta keys.
+export enum ReservedCellMetaKey {
+    script = '$script'
 }
 
 // KnownLanguageIds contains known language identifiers. 
@@ -89,4 +87,31 @@ export enum KnownLanguageIds {
     xml             = 'xml',
     xsl             = 'xsl',
     yaml            = 'yaml'
+}
+
+// KernelConfig represents kernels configuration object.
+export interface KernelConfig {
+    kernelType: string;
+    isEnabled:  boolean;
+}
+
+// ThemeIcon represents theme icon model.
+export interface ThemeIcon {
+    light: string;
+    dark:  string;
+}
+
+
+// VScript represents virtual script configuration model.
+export interface VScript {
+
+    /**
+     * The virtual script kind.
+     */
+    kind: VScriptKind;
+
+    /**
+     * The source code of the script.
+     */
+    code: string;
 }
