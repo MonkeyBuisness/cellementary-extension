@@ -5,15 +5,12 @@ import {
     convertNotebookCellData,
     NotebookCellData
 } from './serializer';
+import {
+    MimeTypes,
+    ReservedCellMetaKey,
+    VScript
+} from './types';
 
-// VScriptKind contains virtual script kind values.
-export enum VScriptKind {
-    js = 'javascript'
-}
-
-enum ReservedCellMeta {
-    script = '$script'
-}
 
 // NotebookController represents abstract notebook controller class implementation
 // to manage notebook sessions.
@@ -72,7 +69,7 @@ export abstract class NotebookController {
 
             const cellExecution = new NotebookCellExecution(execution);
             let scriptExecutor: ScriptExecutor | undefined = undefined;
-            const scriptMeta = (cell.metadata || {})[ReservedCellMeta.script] as VScript;
+            const scriptMeta = (cell.metadata || {})[ReservedCellMetaKey.script] as VScript;
             if (scriptMeta !== undefined) {
                 scriptExecutor = new ScriptExecutor(cell.document.getText(), scriptMeta, cellExecution);
             }
@@ -355,20 +352,6 @@ export interface MetadataField {
     required?: boolean;
 }
 
-// VScript represents virtual script configuration model.
-export interface VScript {
-
-    /**
-     * The virtual script kind.
-     */
-    kind: VScriptKind;
-
-    /**
-     * The source code of the script.
-     */
-    code: string;
-}
-
 // isOnControllerInfo checks if object implements OnControllerInfo interface.
 export function isOnControllerInfo(object: any): object is OnControllerInfo {
     const int = object as OnControllerInfo;
@@ -383,7 +366,9 @@ class ScriptExecutor {
         private cellContent: string,
         code: VScript,
         execution: NotebookCellExecution) {
-        this._ctx = {} as ScriptContext;
+        this._ctx = {
+            mimes: () => MimeTypes,
+        } as ScriptContext;
         this._output = new ScriptContextOutput(execution);
         try {
             const script = new Script(code.code);
@@ -421,6 +406,7 @@ class ScriptExecutor {
 interface ScriptContext {
     before?: (content: string, out: ScriptContextOutput) => void;
     after?: (content: string, out: ScriptContextOutput, success?: boolean) => void;
+    mimes() : { [key: string] : string };
 }
 
 class ScriptContextOutput {
