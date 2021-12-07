@@ -98,7 +98,8 @@ function registerCommandHandlers(
     kernelsView: KernelsView,
     cfgService: ConfigurationService,
     notebookManager: NotebookManager) {
-    m.registerCommandHandler('cell.editMetadata', new EditCellMetadataCmd());
+    m.registerCommandHandler('cell.editMetadata',
+        new EditCellMetadataCmd(notebookManager));
     m.registerCommandHandler('cellementary.ungroupAll',
         new UngroupKernelsCmd(kernelsView));
     m.registerCommandHandler('cellementary.groupByEnableState',

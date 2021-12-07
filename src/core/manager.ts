@@ -1,6 +1,11 @@
 import * as vscode from 'vscode';
 import { NotebookSerializer } from './serializer';
-import { ControllerInfo, isOnControllerInfo, NotebookController, OnControllerInfo } from './controller';
+import {
+    ControllerInfo,
+    isOnControllerInfo,
+    NotebookController,
+    OnControllerInfo
+} from './controller';
 import { ConfigurationService } from '../services/configuration.service';
 import { Configuration, KernelConfig } from './types';
 
@@ -8,6 +13,7 @@ import { Configuration, KernelConfig } from './types';
 export class NotebookManager {
     private readonly _controllers: NotebookController[] = [];
     private readonly _disposables: vscode.Disposable[] = [];
+    private readonly _serializersMap: Map<string, NotebookSerializer>;
 
     /**
      * NotebookManager class constructor.
@@ -22,6 +28,7 @@ export class NotebookManager {
                 this._reconfigureControllers();
             }
         });
+        this._serializersMap = new Map();
     }
 
     /**
@@ -32,9 +39,12 @@ export class NotebookManager {
      */
     public registerNotebookSerializer(notebookTypes: string[], serializer: NotebookSerializer) : void {
         notebookTypes.forEach(t => {
-            const disposable = vscode.workspace.registerNotebookSerializer(t, serializer);
+            const disposable = vscode.workspace.registerNotebookSerializer(t, serializer, {
+                transientOutputs: true,
+            });
             this._disposables.push(disposable);
             this.context.subscriptions.push(disposable);
+            this._serializersMap.set(t, serializer);
         });
     }
 
@@ -115,6 +125,15 @@ export class NotebookManager {
             cellMetadata:           controllerDelails?.cellMetadata(),
             notebookMetadata:       controllerDelails?.notebookMetadata()
         } as ControllerInfo;
+    }
+
+    /**
+     * Returns notebook serializer associated with the provided notebook type.
+     * 
+     * @param notebookType notebook type.
+     */
+    public getNotebookSerializer(notebookType: string) : NotebookSerializer | undefined {
+        return this._serializersMap.get(notebookType);
     }
 
     private _reconfigureControllers() : void {
