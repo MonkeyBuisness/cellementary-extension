@@ -16,6 +16,8 @@ Download and install SQLite tool on your machine with the steps described here:
 - [Linux](https://dev.mysql.com/doc/mysql-installation-excerpt/5.7/en/linux-installation.html)
 - [macOS](https://dev.mysql.com/doc/mysql-installation-excerpt/5.7/en/macos-installation.html)
 
+> If you are using Windows (7/8/10/11), please don't forget to add folder with `mysql` binaries to the system `PATH` environment variable. More info you find read in this [article](https://dev.mysql.com/doc/mysql-windows-excerpt/5.7/en/mysql-installation-windows-path.html).
+
 ## Example usage
 
 - Create a file with a `.mysqlbook` extension

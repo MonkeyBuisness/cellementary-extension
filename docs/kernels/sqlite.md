@@ -13,9 +13,7 @@ commands on your local machine.
 
 Download and install SQLite tool on your machine with the steps described [here](https://www.servermania.com/kb/articles/install-sqlite/).
 
-
-> If you are using Windows (7/8/10/11), please don't forget to add folder with `sqlite3` binaries to the system `PATH` environment variable. More info you find read in this [article](https://justjensen.co/setting-up-sqlite-on-windows-10/#installingsqlite3). 
-
+> If you are using Windows (7/8/10/11), please don't forget to add folder with `sqlite3` binaries to the system `PATH` environment variable. More info you find read in this [article](https://justjensen.co/setting-up-sqlite-on-windows-10/#installingsqlite3).
 
 ## Example usage
 

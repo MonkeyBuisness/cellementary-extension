@@ -70,8 +70,13 @@ export class MySQLController extends NotebookController implements OnControllerI
         let canceled: boolean = false;
         let success: boolean | undefined;
         try {
-            canceled = await this._run(ex, host || '', port || '', db, user || '', password);
-            success = true;
+            const res = await this._run(ex, host || '', port || '', db, user || '', password);
+            if (!res.canceled) {
+                success = !res.err;
+            }
+            if (res.err) {
+                throw res.err;
+            }
         } catch (e: any) {
             ex.appendErrorOutput([e as Error]);
             success = false;
@@ -167,7 +172,9 @@ export class MySQLController extends NotebookController implements OnControllerI
         return (ex.cell.metadata || {})[key] || (ex.notebook.metadata || {})[key] || defaultValue;
     }
 
-    private async _run(ex: NotebookCellExecution, host: string, port: string, db: string, user: string, password?: string) : Promise<boolean> {
+    private async _run(ex: NotebookCellExecution,
+        host: string, port: string,
+        db: string, user: string, password?: string) : Promise<ExecutionResult> {
         // run command.
         const executor = new Executor(MySQLController._execCmd)
             .replaceCMD('{host}', host)
@@ -182,12 +189,13 @@ export class MySQLController extends NotebookController implements OnControllerI
             executor.cancel();
         });
         let canceled: boolean = false;
+        const errs: Error[] = [];
         await executor.execute({
             canceled: () => {
                 canceled = true;
             },
             error: (err: Error) => {
-               throw err;
+               errs.push(err);
             },
             output: async (out: string) => {
                 try {
@@ -199,7 +207,15 @@ export class MySQLController extends NotebookController implements OnControllerI
             }
         });
         
-        return canceled;
+        return {
+            canceled: canceled,
+            err: errs.length
+                ? errs.reduce((p: Error, c: Error) => {
+                    p.message += c.message;
+                    return p;
+                })
+                : undefined
+        };
     }
 
     private static async _parseSQlTableResult(data: string) : Promise<SQLTableResult[]> {
@@ -231,4 +247,9 @@ export class MySQLController extends NotebookController implements OnControllerI
 
         return tables;
     }
+}
+
+interface ExecutionResult {
+    canceled: boolean;
+    err?:     Error;
 }

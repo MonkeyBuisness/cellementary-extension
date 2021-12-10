@@ -80,13 +80,18 @@ export class GoController extends NotebookController implements OnControllerInfo
         ex.token.onCancellationRequested(() => {
             executor.cancel();
         });
+        const errs: Error[] = [];
         await executor.execute({
             canceled: () => {
                 ex.appendTextOutput(['Canceled']);
                 success = undefined;
             },
             error: (err: Error) => {
-                ex.appendErrorOutput([err]);
+                if (process.platform === 'win32') {
+                    errs.push(err);
+                } else {
+                    ex.appendErrorOutput([err]);
+                }
                 success = false;
             },
             output: (out: string) => {
@@ -107,6 +112,12 @@ export class GoController extends NotebookController implements OnControllerInfo
                 }
             }
         });
+        if (errs.length) {
+            ex.appendErrorOutput([errs.reduce((p: Error, c: Error) => {
+                p.message += c.message;
+                return p;
+            })]);
+        }
         fs.unlinkSync(tmpFile);
 
         if (isTest) {

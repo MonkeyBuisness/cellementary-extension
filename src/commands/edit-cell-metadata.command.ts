@@ -17,7 +17,7 @@ export class EditCellMetadataCmd implements CommandHandler {
 
         const notebookCell = args[0];
         const metadata = notebookCell.metadata as { [key: string]: any };
-        const docPath = notebookCell.document.uri.path;
+        const docPath = notebookCell.document.uri.fsPath;
         const docContent = fs.readFileSync(docPath);
         const notebookType: string = notebookCell.notebook.notebookType;
         const notebookSerializer = this.notebookMananger.getNotebookSerializer(notebookType);

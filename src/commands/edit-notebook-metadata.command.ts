@@ -17,7 +17,7 @@ export class EditNotebookMetadataCmd implements CommandHandler {
         }
 
         const { notebookEditor } = args[0];
-        const docPath = notebookEditor.notebookUri.path;
+        const docPath = notebookEditor.notebookUri.fsPath;
         const docContent = fs.readFileSync(docPath);
         const notebookType: string = path.extname(docPath).slice(1);
         const notebookSerializer = this.notebookMananger.getNotebookSerializer(notebookType);
