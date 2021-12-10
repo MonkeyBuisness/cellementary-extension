@@ -1,6 +1,6 @@
 # VSCode Cellementary extension
 
-![cellementary-logo](https://github.com/MonkeyBuisness/cellementary-extension/blob/master/.github/assets/logo.png)
+![cellementary-logo](https://github.com/MonkeyBuisness/cellementary-extension/raw/master/.github/assets/logo.png)
 
 The main purpose of this extension is to store and represent kernels for working with programming languages inside [VS Code notebooks](https://code.visualstudio.com/blogs/2021/08/05/notebooks).
 
@@ -26,7 +26,7 @@ Create a `code` cell (click the `+Code` button) and paste any code.
 
 Select a kernel that supports this type of code and run the code cell to test it.
 
-![how-to-use-notebook](https://github.com/MonkeyBuisness/cellementary-extension/blob/master/.github/assets/guides/how-to-use-notebook.gif)
+![how-to-use-notebook](https://github.com/MonkeyBuisness/cellementary-extension/raw/master/.github/assets/guides/how-to-use-notebook.gif)
 
 Most cell types support `metadata`. Within the metadata, you can provide specific fields that allow you to execute cell code in different ways.
 
@@ -34,7 +34,7 @@ You can also provide specific metadata for the notebook itself to change the way
 
 > NOTE: each notebook type supports its own metadata field types (for notebooks and cells). To see what fields you can provide, open the `Kernel Information` window from the [Kernel Manager](#kernel-manager) pane.
 
-![work-with-notebook-metadata](https://github.com/MonkeyBuisness/cellementary-extension/blob/master/.github/assets/guides/work-with-notebook-metadata.gif)
+![work-with-notebook-metadata](https://github.com/MonkeyBuisness/cellementary-extension/raw/master/.github/assets/guides/work-with-notebook-metadata.gif)
 
 ## Managing kernels
 
@@ -44,7 +44,7 @@ To manage extension kernels (enable / disable / display info, etc) you need to o
 
 This panel allows you to manage installed kernels and view information about kernel usage.
 
-![work-with-kernel-manager](https://github.com/MonkeyBuisness/cellementary-extension/blob/master/.github/assets/guides/work-with-kernel-manager.gif)
+![work-with-kernel-manager](https://github.com/MonkeyBuisness/cellementary-extension/raw/master/.github/assets/guides/work-with-kernel-manager.gif)
 
 # Supported language kernels
 

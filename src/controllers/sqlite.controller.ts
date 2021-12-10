@@ -62,8 +62,14 @@ export class SQLiteController extends NotebookController implements OnController
         let canceled: boolean = false;
         let success: boolean | undefined;
         try {
-            canceled = await this._run(ex, dbPath);
-            success = true;
+            const res = await this._run(ex, dbPath);
+            canceled = res.canceled;
+            if (!res.canceled) {
+                success = !res.err;
+            }
+            if (res.err) {
+                throw res.err;
+            }
         } catch (e: any) {
             ex.appendErrorOutput([e as Error]);
             success = false;
@@ -112,7 +118,7 @@ export class SQLiteController extends NotebookController implements OnController
         return;
     }
 
-    private async _run(ex: NotebookCellExecution, dbPath: string) : Promise<boolean> {
+    private async _run(ex: NotebookCellExecution, dbPath: string) : Promise<ExecutionResult> {
         // run command.
         const executor = new Executor(SQLiteController._execCmd)
             .replaceCMD('{db}', dbPath)
@@ -121,12 +127,13 @@ export class SQLiteController extends NotebookController implements OnController
             executor.cancel();
         });
         let canceled: boolean = false;
+        const errs: Error[] = [];
         await executor.execute({
             canceled: () => {
                 canceled = true;
             },
             error: (err: Error) => {
-               throw err;
+                errs.push(err);
             },
             output: (out: string) => {
                 const res = SQLiteController._parseSQlTableResult(out);
@@ -134,7 +141,12 @@ export class SQLiteController extends NotebookController implements OnController
             }
         });
         
-        return canceled;
+        return {
+            canceled: canceled,
+            err:      errs.length
+                ? errs.reduce((p: Error, c: Error) => new Error(p.message += c.message))
+                : undefined
+        };
     }
 
     private static _parseSQlTableResult(data: string) : SQLTableResult[] {
@@ -178,4 +190,9 @@ export class SQLiteController extends NotebookController implements OnController
 
         return tables;
     }
+}
+
+interface ExecutionResult {
+    canceled: boolean;
+    err?:     Error;
 }
