@@ -75,3 +75,7 @@ This panel allows you to manage installed kernels and view information about ker
 # Contributing
 
 If you want to improve this extension or fix a found bug, please follow this [guide](https://github.com/MonkeyBuisness/cellementary-extension/blob/master/docs/contributing.md).
+
+# License
+
+[MIT](https://github.com/MonkeyBuisness/cellementary-extension/blob/master/LICENSE)
