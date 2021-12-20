@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 const { spawn } = require('child_process');
 import { waitUntil, WAIT_FOREVER } from 'async-wait-until';
+import { Stream } from 'stream';
 
 // Executor represents class to execute commands with arguments locally.
 export class Executor {
@@ -30,7 +31,7 @@ export class Executor {
         try {
             const args: any[] = (this._cmds.slice(1) || []);
             this._proc = spawn(this._cmds[0], args, {
-                env: this._env || process.env,
+                env: this._env || process.env
             });
             this._proc.on('error', (e: any) => {
                 const err = e as Error;
@@ -42,7 +43,25 @@ export class Executor {
                 h?.error(err);
             });
 
-            const { stdout, stderr } = this._proc;
+            const { stdout, stderr, stdin } = this._proc;
+
+            if (stdin && h) {
+                new Stream.Readable({
+                    read: async () => {
+                        if (!h.input) {
+                            stdin.end();
+                            return;
+                        }
+
+                        const data = await h.input();
+                        if (data) {
+                            stdin.write(data);
+                        }
+                        stdin.end();
+                    },
+                }).pipe(stdin);
+            }
+
             await Promise.all([
                 this._procStateChanged(),
                 this._stdErrStream(stderr, h),
@@ -103,4 +122,5 @@ export interface ExecutionHandler {
     canceled() : void;
     error(err: Error) : void;
     output(out: string) : void;
+    input?() : Promise<string | undefined>;
 }
