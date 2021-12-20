@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { Script, createContext } from 'vm';
+import { v4 as uuidv4 } from 'uuid';
 
 import {
     convertNotebookCellData,
@@ -10,6 +11,7 @@ import {
     ReservedCellMetaKey,
     VScript
 } from './types';
+import { StdInConfig } from '../renderers/std-in-renderer/types';
 
 
 // NotebookController represents abstract notebook controller class implementation
@@ -201,6 +203,30 @@ export class NotebookCellExecution {
      */
     public async delay(ms: number) : Promise<unknown> {
         return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    /**
+     * Creates a new input cell.
+     */
+    public newInputCell(
+        prompt?: string,
+        mime: string = MimeTypes.stdIn,
+        renderedId: string = 'std-in-renderer') : Promise<string | undefined> {
+        const request = uuidv4();
+        this.appendJSONOutput([{
+            request: request,
+            prompt:  prompt
+        } as StdInConfig], mime);
+
+        const messageChannel = vscode.notebooks.createRendererMessaging(renderedId);
+        return new Promise<string | undefined>((resolve) => {
+            const disposable = messageChannel.onDidReceiveMessage(e => {
+                if (e.message.request === request) {
+                    resolve(e.message.data as string);
+                    disposable.dispose();
+                }
+            });
+        });
     }
 }
 

@@ -1,0 +1,7 @@
+.contentFrame {
+    box-sizing: border-box;
+    height: 42px;
+    width: 100%;
+    border: none;
+    overflow: hidden;
+}

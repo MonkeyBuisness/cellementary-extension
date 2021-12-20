@@ -2,6 +2,7 @@
 export enum MimeTypes {
     stdError    = 'application/vnd.code.notebook.error',
     stdTest     = 'application/cellementary.test',
+    stdIn       = 'application/cellementary.std-in',
     plainText   = 'text/plain',
     html        = 'text/html',
     sqlTable    = 'application/cellementary.sql.table',

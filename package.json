@@ -195,6 +195,15 @@
         ]
       },
       {
+        "id": "std-in-renderer",
+        "entrypoint": "./out/renderers/std-in-renderer.js",
+        "displayName": "Standart stdin renderer",
+        "mimeTypes": [
+          "application/cellementary.std-in"
+        ],
+        "requiresMessaging": "always"
+      },
+      {
         "id": "dhtml-renderer",
         "entrypoint": "./out/renderers/dhtml-renderer.js",
         "displayName": "Dynamic HTML renderer",

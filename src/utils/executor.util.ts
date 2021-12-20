@@ -5,6 +5,7 @@ import { Stream } from 'stream';
 
 // Executor represents class to execute commands with arguments locally.
 export class Executor {
+    private static readonly _promptMsg = '[cell::prompt]';
     private static readonly _canceledErr = 'canceled';
     private _cmds: string[] = [];
     private _proc?: any;
@@ -12,6 +13,7 @@ export class Executor {
     private _stdoutStreamFinished: boolean = false;
     private _canceled: boolean = false;
     private _env?: {[key: string]: string};
+    private _stdin?: any;
 
     constructor(cmd: string) {
         this._cmds = cmd.split(' ');
@@ -44,24 +46,8 @@ export class Executor {
             });
 
             const { stdout, stderr, stdin } = this._proc;
-
-            if (stdin && h) {
-                new Stream.Readable({
-                    read: async () => {
-                        if (!h.input) {
-                            stdin.end();
-                            return;
-                        }
-
-                        const data = await h.input();
-                        if (data) {
-                            stdin.write(data);
-                        }
-                        stdin.end();
-                    },
-                }).pipe(stdin);
-            }
-
+            this._stdin = stdin;
+            
             await Promise.all([
                 this._procStateChanged(),
                 this._stdErrStream(stderr, h),
@@ -100,8 +86,20 @@ export class Executor {
             if (!data) {
                 continue;
             }
-
-            h?.output(data.toString());
+            const out = data.toString() as string;
+            const outChunks = out.split('\n');
+            for (let chunk of outChunks) {
+                if (chunk.trimEnd().toLowerCase().startsWith(Executor._promptMsg)) {
+                    const params = out.split('->', 2);
+                    let prompt: string | undefined = undefined;
+                    if (params.length > 1) {
+                        prompt = params[1].trim();
+                    } 
+                    await this._prompt(prompt, h);
+                    continue;
+                }
+                h?.output(chunk);
+            }
         }
         this._stdoutStreamFinished = true;
     }
@@ -115,6 +113,17 @@ export class Executor {
         err.name = Executor._canceledErr;
         throw err;
     }
+
+    private async _prompt(prompt?: string, h?: ExecutionHandler) : Promise<void> {
+        if (!this._stdin || !h || !h.input) {
+            return;
+        }
+
+        const data = await h.input(prompt);
+        if (data) {
+            this._stdin.write(`${data}\n`);
+        }
+    }
 }
 
 // ExecutionHandler describes execution handler interface.
@@ -122,5 +131,5 @@ export interface ExecutionHandler {
     canceled() : void;
     error(err: Error) : void;
     output(out: string) : void;
-    input?() : Promise<string | undefined>;
+    input?(prompt?: string) : Promise<string | undefined>;
 }

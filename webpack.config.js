@@ -78,6 +78,7 @@ const makeConfig = (argv, { entry, out, target, library = 'commonjs' }) => ({
         'uuid':                  'commonjs uuid',
         'vm':                    'commonjs vm',
         'xml2js':                'commonjs xml2js',
+        'stream':                'commonjs stream',
     },
 });
 
@@ -110,6 +111,12 @@ module.exports = (env, argv) => [
     makeConfig(argv, {
         entry:   './src/renderers/std-text-renderer/renderer.ts',
         out:     './out/renderers/std-text-renderer.js',
+        target:  'web',
+        library: 'module'
+    }),
+    makeConfig(argv, {
+        entry:   './src/renderers/std-in-renderer/renderer.ts',
+        out:     './out/renderers/std-in-renderer.js',
         target:  'web',
         library: 'module'
     }),
