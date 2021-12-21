@@ -9,7 +9,7 @@ import {
     NotebookController,
     OnControllerInfo
 } from "../core/controller";
-import { KnownLanguageIds } from '../core/types';
+import { KnownLanguageIds, MimeTypes } from '../core/types';
 import path = require('path');
 import { Executor } from '../utils/executor.util';
 
@@ -248,7 +248,13 @@ export class JavaController extends NotebookController implements OnControllerIn
             },
             output: (out: string) => {
                 ex.appendTextOutput([out]);
-            }
+            },
+            input: (prompt?: string) : Promise<string | undefined> => {
+                return ex.newInputCell(prompt);
+            },
+            clear: async () : Promise<void> => {
+                ex.clearOutput();
+            },
         });
         
         return canceled;

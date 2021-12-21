@@ -36,12 +36,13 @@ class StdInRenderer extends NotebookRenderer {
                     if (this.context.postMessage) {
                         this.context.postMessage({
                             request: cfg.request,
-                            data:    inputBlock.value
+                            data:    inputBlock.value.trimEnd()
                         });
                         inputBlock.disabled = true;
                     }
                 }
             });
+            inputBlock.focus();
             StdInRenderer._setInputStyles(inputBlock);
         }
     }

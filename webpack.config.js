@@ -77,8 +77,7 @@ const makeConfig = (argv, { entry, out, target, library = 'commonjs' }) => ({
         'node-abort-controller': 'commonjs node-abort-controller',
         'uuid':                  'commonjs uuid',
         'vm':                    'commonjs vm',
-        'xml2js':                'commonjs xml2js',
-        'stream':                'commonjs stream',
+        'xml2js':                'commonjs xml2js'
     },
 });
 

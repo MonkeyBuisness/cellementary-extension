@@ -1,11 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 const { spawn } = require('child_process');
 import { waitUntil, WAIT_FOREVER } from 'async-wait-until';
-import { Stream } from 'stream';
 
 // Executor represents class to execute commands with arguments locally.
 export class Executor {
-    private static readonly _promptMsg = '[cell::prompt]';
+    private static readonly _cellCmdRegex = /^@::(?<cmd>.*)[\s]->(?<meta>.*)$/gm;
+    private static readonly _promptMsg = 'prompt';
+    private static readonly _clearMsg = 'clear';
     private static readonly _canceledErr = 'canceled';
     private _cmds: string[] = [];
     private _proc?: any;
@@ -62,6 +63,9 @@ export class Executor {
             if (this._canceled) {
                 h?.canceled();
             }
+            if (this._stdin) {
+                this._stdin.end();
+            }
         }
     }
 
@@ -86,21 +90,46 @@ export class Executor {
             if (!data) {
                 continue;
             }
-            const out = data.toString() as string;
-            const outChunks = out.split('\n');
-            for (let chunk of outChunks) {
-                if (chunk.trimEnd().toLowerCase().startsWith(Executor._promptMsg)) {
-                    const params = out.split('->', 2);
-                    let prompt: string | undefined = undefined;
-                    if (params.length > 1) {
-                        prompt = params[1].trim();
-                    } 
-                    await this._prompt(prompt, h);
-                    continue;
+            const out = data.toString().split('\n');
+            
+            let outChunks: string[] = [];
+            for (let chunk of out) {
+                const execArr = Executor._cellCmdRegex.exec(chunk.trim());
+                const cmd = (execArr?.groups || {})['cmd'];
+                let meta = (execArr?.groups || {})['meta'];
+                Executor._cellCmdRegex.lastIndex = 0;
+                
+                switch (cmd) {
+                    case Executor._clearMsg:
+                        if (outChunks.length) {
+                            h?.output(outChunks.join('\n'));
+                            outChunks = [];
+                        }
+
+                        if (h && h.clear) {
+                            await h.clear();
+                        }
+                        break;
+                    case Executor._promptMsg:
+                        if (outChunks.length) {
+                            h?.output(outChunks.join('\n'));
+                            outChunks = [];
+                        }
+
+                        if (meta) {
+                            meta = meta.trim();
+                        }
+                        await this._prompt(meta, h);
+                        break;
+                    default:
+                        outChunks.push(chunk);
                 }
-                h?.output(chunk);
+            }
+            if (outChunks.length) {
+                h?.output(outChunks.join('\n'));
             }
         }
+
         this._stdoutStreamFinished = true;
     }
 
@@ -131,5 +160,6 @@ export interface ExecutionHandler {
     canceled() : void;
     error(err: Error) : void;
     output(out: string) : void;
+    clear?() : Promise<void>;
     input?(prompt?: string) : Promise<string | undefined>;
 }

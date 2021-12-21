@@ -110,7 +110,13 @@ export class GoController extends NotebookController implements OnControllerInfo
                 if (success === undefined) {
                     success = true;
                 }
-            }
+            },
+            input: (prompt?: string) : Promise<string | undefined> => {
+                return ex.newInputCell(prompt);
+            },
+            clear: async () : Promise<void> => {
+                ex.clearOutput();
+            },
         });
         if (errs.length) {
             ex.appendErrorOutput([errs.reduce((p: Error, c: Error) => {
