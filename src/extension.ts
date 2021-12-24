@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { CheckKernelСompatibilityCmd } from './commands/check-kernel-compatibility.command';
 import { CommandManager } from './commands/command-handler';
 import { DisableKernelCmd } from './commands/disable-kernel.command';
 import { EditCellMetadataCmd } from './commands/edit-cell-metadata.command';
@@ -13,7 +14,7 @@ import { GoPlaygroundController } from './controllers/go-playground.controller';
 import { GoController } from './controllers/go.controller';
 import { HTMLController } from './controllers/html.controller';
 import { JavaOneController } from './controllers/java-one.controller';
-import { JavaController } from './controllers/java.controller';
+import { JavaController, JavaControllerKernelChecker } from './controllers/java.controller';
 import { JSONController } from './controllers/json.controller';
 import { MarkdownController } from './controllers/markdown.controller';
 import { MySQLController } from './controllers/mysql.controller';
@@ -54,6 +55,9 @@ export function activate(context: vscode.ExtensionContext) {
     // register extension command handlers.
     cmdManager = new CommandManager(context);
     registerCommandHandlers(cmdManager, kernelsView, cfgService, notebookManager);
+
+    // register kernel compatibility checkers.
+    registerKernelCompatibilityCheckers(notebookManager);
 }
 
 export function deactivate() {
@@ -117,6 +121,8 @@ function registerCommandHandlers(
         new ShowKernelInfoCmd(notebookManager));
     m.registerCommandHandler('notebook.editMetadata',
         new EditNotebookMetadataCmd(notebookManager));
+    m.registerCommandHandler('cellementary.checkKernelСompatibility',
+        new CheckKernelСompatibilityCmd(notebookManager));
 }
 
 function registerViews(
@@ -128,4 +134,9 @@ function registerViews(
 
 function registerServices(context: vscode.ExtensionContext) {
     cfgService = new ConfigurationService(context);
+}
+
+function registerKernelCompatibilityCheckers(notebookManager: NotebookManager) {
+    notebookManager.registerKernelCompatibilityChecker(JavaController.controllerId,
+        new JavaControllerKernelChecker());
 }

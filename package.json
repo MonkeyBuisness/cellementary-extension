@@ -284,16 +284,20 @@
       "view/item/context": [
         {
           "command": "cellementary.disableKernel",
-          "when": "view == kernelsView && viewItem == 'controller_enabled'"
+          "when": "view == kernelsView && viewItem =~ /controller_enabled/"
         },
         {
           "command": "cellementary.enableKernel",
-          "when": "view == kernelsView && viewItem == 'controller_disabled'"
+          "when": "view == kernelsView && viewItem =~ /controller_disabled/"
         },
         {
           "command": "cellementary.kernelInfo",
           "when": "view == kernelsView && viewItem =~ /controller/",
           "group": "inline"
+        },
+        {
+          "command": "cellementary.checkKernelСompatibility",
+          "when": "view == kernelsView && viewItem in cellementary.supportedKernelCheckers"
         }
       ]
     },
@@ -355,6 +359,10 @@
           "light": "resources/icons/light/info.svg",
           "dark": "resources/icons/dark/info.svg"
         }
+      },
+      {
+        "command": "cellementary.checkKernelСompatibility",
+        "title": "Check Kernel Сompatibility with your system"
       }
     ]
   },

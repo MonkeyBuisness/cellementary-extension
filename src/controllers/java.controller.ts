@@ -9,7 +9,7 @@ import {
     NotebookController,
     OnControllerInfo
 } from "../core/controller";
-import { KnownLanguageIds, MimeTypes } from '../core/types';
+import { KernelCompatibilityChecker, KernelRequirement, KnownLanguageIds, MimeTypes } from '../core/types';
 import path = require('path');
 import { Executor } from '../utils/executor.util';
 
@@ -36,6 +36,10 @@ export class JavaController extends NotebookController implements OnControllerIn
             JavaController._notebookType,
             JavaController._label
         );
+    }
+
+    public static get controllerId() : string {
+        return JavaController._controllerId;
     }
 
     public supportedLanguages(): string[] | undefined {
@@ -276,5 +280,12 @@ export class JavaController extends NotebookController implements OnControllerIn
         }
 
         return fileName;
+    }
+}
+
+export class JavaControllerKernelChecker implements KernelCompatibilityChecker {
+
+    requirements(): KernelRequirement[] {
+        throw new Error('Method not implemented.');
     }
 }

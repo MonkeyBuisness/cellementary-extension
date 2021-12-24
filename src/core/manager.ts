@@ -7,13 +7,14 @@ import {
     OnControllerInfo
 } from './controller';
 import { ConfigurationService } from '../services/configuration.service';
-import { Configuration, KernelConfig } from './types';
+import { Configuration, KernelCompatibilityChecker, KernelConfig } from './types';
 
 // NotebookManager represents notebook manager class implementation.
 export class NotebookManager {
     private readonly _controllers: NotebookController[] = [];
     private readonly _disposables: vscode.Disposable[] = [];
     private readonly _serializersMap: Map<string, NotebookSerializer>;
+    private readonly _checkersMap: Map<string, KernelCompatibilityChecker>;
 
     /**
      * NotebookManager class constructor.
@@ -29,6 +30,7 @@ export class NotebookManager {
             }
         });
         this._serializersMap = new Map();
+        this._checkersMap = new Map();
     }
 
     /**
@@ -77,6 +79,18 @@ export class NotebookManager {
 
         this._disposables.push(controller);
         this.context.subscriptions.push(controller);
+    }
+
+    /**
+     * Register a {@link KernelCompatibilityChecker} for the kernel.
+     *
+     * @param controllerId The Id of the controller (kernel).
+     * @param checker A kernel checker.
+     */
+    public registerKernelCompatibilityChecker(controllerId: string, checker: KernelCompatibilityChecker) : void {
+        this._checkersMap.set(`controller_enabled_${controllerId}`, checker);
+        vscode.commands.executeCommand(
+            'setContext', 'cellementary.supportedKernelCheckers', [...this._checkersMap.keys()]);
     }
 
     /**

@@ -90,6 +90,13 @@ export enum KnownLanguageIds {
     yaml            = 'yaml'
 }
 
+// KernelRequirementCheckStatus contains kernel requirement check status.
+export enum KernelRequirementCheckStatus {
+    success,
+    fail,
+    warn
+}
+
 // KernelConfig represents kernels configuration object.
 export interface KernelConfig {
     kernelType: string;
@@ -101,7 +108,6 @@ export interface ThemeIcon {
     light: string;
     dark:  string;
 }
-
 
 // VScript represents virtual script configuration model.
 export interface VScript {
@@ -115,4 +121,39 @@ export interface VScript {
      * The source code of the script.
      */
     code: string;
+}
+
+// KernelCompatibilityChecker represents kernel compatibility checker interface. 
+export interface KernelCompatibilityChecker {
+
+    /**
+     * Returns kernel requirements list.
+     */
+    requirements() : KernelRequirement[];
+}
+
+// KernelRequirement represents kernel requirement interface. 
+export interface KernelRequirement {
+    /**
+     * The name of the requirement.
+     */
+    name: string;
+
+    /**
+     * Starts checking requirement.
+     */
+    check() : KernelRequirementCheckResult;
+}
+
+// KernelRequirementCheckResult represents kernel requirement check status model.
+export interface KernelRequirementCheckResult {
+    /**
+     * Status of the check.
+     */
+    status: KernelRequirementCheckStatus;
+
+    /**
+     * Desciption of the check in Markdown format.
+     */
+    msgMd?: string;
 }

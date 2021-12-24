@@ -29,7 +29,7 @@ export class KernelNode extends vscode.TreeItem {
             kind === KernelNodeKind.controller ?
                 vscode.TreeItemCollapsibleState.None : vscode.TreeItemCollapsibleState.Expanded
         );
-        this.contextValue = `${kind}_${isEnabled ? 'enabled' : 'disabled'}`;
+        this.contextValue = `${kind}_${isEnabled ? 'enabled' : 'disabled'}_${label}`;
         let iconName: string | string[] = '';
         switch (kind) {
             case KernelNodeKind.controller:
