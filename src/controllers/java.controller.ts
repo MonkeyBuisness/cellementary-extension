@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import * as fs from 'fs';
 import { tmpdir } from 'os';
 import { v4 as uuidv4 } from 'uuid';
@@ -9,7 +10,7 @@ import {
     NotebookController,
     OnControllerInfo
 } from "../core/controller";
-import { KernelCompatibilityChecker, KernelRequirement, KnownLanguageIds, MimeTypes } from '../core/types';
+import { KernelCompatibilityChecker, KernelRequirement, KernelRequirementCheckResult, KernelRequirementCheckStatus, KnownLanguageIds, MimeTypes } from '../core/types';
 import path = require('path');
 import { Executor } from '../utils/executor.util';
 
@@ -286,6 +287,34 @@ export class JavaController extends NotebookController implements OnControllerIn
 export class JavaControllerKernelChecker implements KernelCompatibilityChecker {
 
     requirements(): KernelRequirement[] {
-        throw new Error('Method not implemented.');
+        return [
+            {
+                name: 'test 1',
+                check: async (cToken: vscode.CancellationToken): Promise<KernelRequirementCheckResult | undefined> => {
+                    return {
+                        status: KernelRequirementCheckStatus.success,
+                        msgMd: 'lol'
+                    };
+                }
+            },
+            {
+                name: 'test 2',
+                check: async (cToken: vscode.CancellationToken): Promise<KernelRequirementCheckResult | undefined> => {
+                    return {
+                        status: KernelRequirementCheckStatus.fail,
+                        msgMd: 'kek'
+                    };
+                }
+            },
+            {
+                name: 'test 3',
+                check: async (cToken: vscode.CancellationToken): Promise<KernelRequirementCheckResult | undefined> => {
+                    return {
+                        status: KernelRequirementCheckStatus.warn,
+                        msgMd: 'azazazza'
+                    };
+                }
+            },
+        ];
     }
 }

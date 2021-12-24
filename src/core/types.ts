@@ -1,3 +1,5 @@
+import * as vscode from 'vscode';
+
 // MimeTypes contains available cell output mime types.
 export enum MimeTypes {
     stdError    = 'application/vnd.code.notebook.error',
@@ -140,9 +142,14 @@ export interface KernelRequirement {
     name: string;
 
     /**
+     * Is this check should be run in async mode.
+     */
+    async?: boolean;
+
+    /**
      * Starts checking requirement.
      */
-    check() : KernelRequirementCheckResult;
+    check(cToken: vscode.CancellationToken) : Promise<KernelRequirementCheckResult | undefined>;
 }
 
 // KernelRequirementCheckResult represents kernel requirement check status model.

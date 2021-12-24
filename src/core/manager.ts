@@ -150,6 +150,15 @@ export class NotebookManager {
         return this._serializersMap.get(notebookType);
     }
 
+    /**
+     * Returns kernel compatibility checker by controller Id.
+     * 
+     * @param controllerId Controller Id.
+     */
+    public getKernelCompatibilityChecker(controllerId: string) : KernelCompatibilityChecker | undefined {
+        return this._checkersMap.get(`controller_enabled_${controllerId}`);     
+    }
+
     private _reconfigureControllers() : void {
         const kernelsCfg: KernelConfig[] = this.cfgService
             .getConfiguration(Configuration.kernels, []);
