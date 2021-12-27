@@ -109,11 +109,36 @@ export class KernelCompatibilityView {
             .codicon-warning {
                 color: #ffc400;
             }
+
+            vscode-data-grid-cell blockquote {
+                margin-left: 0 !important;
+                padding: 0 6px 6px 6px;
+            }
+
+            vscode-data-grid-row {
+                border-bottom: 1px solid var(--vscode-menu-separatorBackground);
+            }
+
+            .compatibility-label {
+                display: flex;
+                align-items: center;
+                margin: 16px 12px;
+                font-weight: bold;
+                font-size: 18px;
+            }
+
+            .compatibility-label > .msg {
+                margin-left: 16px;
+            }
         </style>
     </head>
     <body>
         <section>
             <div class="section-label">Requirements</div>
+            <div class="compatibility-label hidden">
+                <span class="codicon"></span>
+                <span class="msg"></span>
+            </div>
             
             <vscode-data-grid
                 id="req-cell-grid"
@@ -135,6 +160,12 @@ export class KernelCompatibilityView {
                             task.executionCallback(msg.result);
                         }
                     });
+
+                    this._compatibilityLabel = document.querySelector('.compatibility-label');
+                    this._compatibilityIcon = document.querySelector('.compatibility-label > span.codicon');
+                    this._compatibilityMsg = document.querySelector('.compatibility-label > span.msg');
+
+                    this._checks = new Map();
                 }
 
                 sendState(index, type) {
@@ -143,9 +174,55 @@ export class KernelCompatibilityView {
                         index: index
                     });
                 }
+
+                setCheck(index, status) {
+                    this._checks.set(index, status);
+
+                    if (this._checks.size !== tasks.length) {
+                        return;
+                    }
+
+                    this._compatibilityLabel.classList.remove('hidden');
+                    this._compatibilityIcon.classList.remove(...this._compatibilityIcon.classList);
+                    if ([...this._checks.values()].find(v => v === 'fail')) {
+                        this._compatibilityIcon.classList.add('codicon',
+                            TaskExecutor.getResponseIcon('fail'));
+                        this._compatibilityMsg.innerText = 'Your system is not ready to work with this kernel';
+                        return;
+                    }
+
+                    const successChecks = [...this._checks.values()].filter(v => v === 'success');
+                    if (successChecks.length === tasks.length) {
+                        this._compatibilityIcon.classList.add('codicon',
+                            TaskExecutor.getResponseIcon('success'));
+                        this._compatibilityMsg.innerText = 'Your system is ready to work with this kernel!';
+                        return;
+                    }
+
+                    this._compatibilityIcon.classList.add('codicon',
+                        TaskExecutor.getResponseIcon('warn'));
+                    this._compatibilityMsg.innerText = 'Your system is almost ready to work with this kernel';
+                }
+
+                static getResponseIcon(status) {
+                    switch (status) {
+                        case 'success':
+                            return 'codicon-check';
+                        case 'fail':
+                            return 'codicon-error';
+                        case 'warn':
+                            return 'codicon-warning';
+                    }
+
+                    return 'codeicon-debug-pause';
+                }
             }
 
             const taskExecutor = new TaskExecutor();
+        </script>
+
+        <script>
+            
         </script>
 
         <script>
@@ -167,28 +244,17 @@ export class KernelCompatibilityView {
 
                     if (response) {
                         this._nodes.reqResponse.innerHTML =  marked.parse(response.msgMd || '');
+                        this._nodes.statusIcon.classList.add('codicon',
+                            TaskExecutor.getResponseIcon(response.status));
                     }
-                    this._nodes.statusIcon.classList.add('codicon',
-                        RequirementTask._getResponseIcon(response.status));
                     this._nodes.statusIcon.classList.remove('hidden');
+
+                    taskExecutor.setCheck(this.index, response ? response.status : undefined);
                 }
 
-                execute() {
+                async execute() {
                     this._setActionState('running');
                     taskExecutor.sendState(this.index, 'run');
-                }
-
-                static _getResponseIcon(status) {
-                    switch (status) {
-                        case 'success':
-                            return 'codicon-check';
-                        case 'fail':
-                            return 'codicon-error';
-                        case 'warn':
-                            return 'codicon-warning';
-                    }
-
-                    return 'codeicon-debug-pause';
                 }
 
                 _actionCallback() {

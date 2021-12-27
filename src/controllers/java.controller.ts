@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import { tmpdir } from 'os';
+import { platform, tmpdir } from 'os';
 import { v4 as uuidv4 } from 'uuid';
 
 import {
@@ -285,33 +285,166 @@ export class JavaController extends NotebookController implements OnControllerIn
 }
 
 export class JavaControllerKernelChecker implements KernelCompatibilityChecker {
+    private static readonly _supportedOS: string[] = ['linux', 'win32', 'darwin'];
 
     requirements(): KernelRequirement[] {
         return [
             {
-                name: 'test 1',
-                check: async (cToken: vscode.CancellationToken): Promise<KernelRequirementCheckResult | undefined> => {
+                name: 'Check Operating System',
+                check: async (_: vscode.CancellationToken): Promise<KernelRequirementCheckResult | undefined> => {
+                    const isSupported = JavaControllerKernelChecker._supportedOS.includes(process.platform);
+
+                    if (!isSupported) {
+                        return {
+                            status: KernelRequirementCheckStatus.warn,
+                            msgMd:  `\`${process.platform}\` may not be supported by this extension`,
+                        };
+                    }
+
                     return {
                         status: KernelRequirementCheckStatus.success,
-                        msgMd: 'lol'
+                        msgMd:  `### \`${process.platform}\` detected!`
+                    };
+                },
+            },
+            {
+                name: 'Check Java compiler availability',
+                check: async (cToken: vscode.CancellationToken): Promise<KernelRequirementCheckResult | undefined> => {
+                    const executor = new Executor('javac -version');
+                    cToken.onCancellationRequested(() => {
+                        executor.cancel();
+                    });
+                    let canceled: boolean = false;
+                    let errs: string = '';
+                    let output: string = '';
+                    await executor.execute({
+                        canceled: () => {
+                            canceled = true;
+                        },
+                        error: (err: Error) => {                
+                            errs = errs.concat(err.message);
+                        },
+                        output: (out: string) => {
+                            output = output.concat(out);
+                        },
+                    });
+
+                    if (canceled) {
+                        return {
+                            status: KernelRequirementCheckStatus.warn,
+                            msgMd:  '# Canceled',
+                        };
+                    }
+
+                    // WTF?!
+                    if (errs.startsWith('javac ')) {
+                        output = errs;
+                        errs = '';
+                    }
+
+                    if (errs.length) {
+                        return {
+                            status: KernelRequirementCheckStatus.fail,
+                            msgMd:  `
+Error to execute \`javac -version\` command:
+
+\`\`\`
+${errs}
+\`\`\`
+
+### Possible reasons
+
+- [JDK](https://www.oracle.com/java/technologies/downloads/) is not installed on your computer.
+> Download and install Java on your machine with the steps described here:
+> - [Windows](https://docs.oracle.com/javase/9/install/installation-jdk-and-jre-microsoft-windows-platforms.htm)
+> - [macOS](https://docs.oracle.com/javase/9/install/installation-jdk-and-jre-macos.htm)
+> - [Linux](https://docs.oracle.com/javase/9/install/installation-server-jre-9-linux-platforms.htm)
+- Extension cannot find \`javac\` executable in your system.
+> Steps to set *PATH* environment variable:
+> - [Linux](https://docs.oracle.com/cd/E19062-01/sun.mgmt.ctr36/819-5418/gaznb/index.html)
+> - [Windows](https://docs.oracle.com/cd/E19062-01/sun.mgmt.ctr36/819-5418/system-prep-proc-101/index.html)
+`,
+                        };
+                    }
+
+                    const outChunks = output.split(' ');
+                    const version = outChunks.length > 1 ? `v${outChunks[1]}` : output;
+
+                    return {
+                        status: KernelRequirementCheckStatus.success,
+                        msgMd: `
+# Success
+
+### Found Java compiler: ${version}`
                     };
                 }
             },
             {
-                name: 'test 2',
+                name: 'Check Java executor availability',
                 check: async (cToken: vscode.CancellationToken): Promise<KernelRequirementCheckResult | undefined> => {
+                    const executor = new Executor('java -version');
+                    cToken.onCancellationRequested(() => {
+                        executor.cancel();
+                    });
+                    let canceled: boolean = false;
+                    let errs: string = '';
+                    let output: string = '';
+                    await executor.execute({
+                        canceled: () => {
+                            canceled = true;
+                        },
+                        error: (err: Error) => {                
+                            errs = errs.concat(err.message);
+                        },
+                        output: (out: string) => {
+                            output = output.concat(out);
+                        },
+                    });
+
+                    if (canceled) {
+                        return {
+                            status: KernelRequirementCheckStatus.warn,
+                            msgMd:  '# Canceled',
+                        };
+                    }
+
+                    // WTF?!
+                    if (errs.startsWith('java version')) {
+                        output = errs;
+                        errs = '';
+                    }
+
+                    if (errs.length) {
+                        return {
+                            status: KernelRequirementCheckStatus.fail,
+                            msgMd:  `
+Error to execute \`java -version\` command:
+
+\`\`\`
+${errs}
+\`\`\`
+
+### Possible reasons
+
+- [JDK](https://www.oracle.com/java/technologies/downloads/) is not installed on your computer.
+> Download and install Java on your machine with the steps described here:
+> - [Windows](https://docs.oracle.com/javase/9/install/installation-jdk-and-jre-microsoft-windows-platforms.htm)
+> - [macOS](https://docs.oracle.com/javase/9/install/installation-jdk-and-jre-macos.htm)
+> - [Linux](https://docs.oracle.com/javase/9/install/installation-server-jre-9-linux-platforms.htm)
+- Extension cannot find \`javac\` executable in your system.
+> Steps to set *PATH* environment variable:
+> - [Linux](https://docs.oracle.com/cd/E19062-01/sun.mgmt.ctr36/819-5418/gaznb/index.html)
+> - [Windows](https://docs.oracle.com/cd/E19062-01/sun.mgmt.ctr36/819-5418/system-prep-proc-101/index.html)
+`,
+                        };
+                    }
+
                     return {
-                        status: KernelRequirementCheckStatus.fail,
-                        msgMd: 'kek'
-                    };
-                }
-            },
-            {
-                name: 'test 3',
-                check: async (cToken: vscode.CancellationToken): Promise<KernelRequirementCheckResult | undefined> => {
-                    return {
-                        status: KernelRequirementCheckStatus.warn,
-                        msgMd: 'azazazza'
+                        status: KernelRequirementCheckStatus.success,
+                        msgMd: `
+# Success
+
+### ${output}`
                     };
                 }
             },
