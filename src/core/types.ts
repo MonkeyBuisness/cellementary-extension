@@ -94,9 +94,9 @@ export enum KnownLanguageIds {
 
 // KernelRequirementCheckStatus contains kernel requirement check status.
 export enum KernelRequirementCheckStatus {
-    success,
-    fail,
-    warn
+    success = 'success',
+    fail    = 'fail',
+    warn    = 'warn'
 }
 
 // KernelConfig represents kernels configuration object.
@@ -140,11 +140,6 @@ export interface KernelRequirement {
      * The name of the requirement.
      */
     name: string;
-
-    /**
-     * Is this check should be run in async mode.
-     */
-    async?: boolean;
 
     /**
      * Starts checking requirement.

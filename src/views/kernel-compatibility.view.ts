@@ -1,12 +1,7 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
-import * as path from 'path';
 
-import { ControllerInfo } from '../core/controller';
 import { getUri } from './utils';
-import { escapeString } from '../utils/string.util';
 import { KernelCompatibilityChecker } from '../core/types';
-import { vsCodeOption } from '@vscode/webview-ui-toolkit';
 
 export class KernelCompatibilityView {
     private _disposables: vscode.Disposable[] = [];
@@ -67,59 +62,11 @@ export class KernelCompatibilityView {
                         result: result
                     });
                     break;
+                case 'stop':
+                    cancelations[e.index].cancel();
+                    break;
             }
         }));
-        /*const iconFile = controllerInfo.iconName || 'default.png';
-        const iconUri = getUri(webview, extensionUri, [
-            "resources",
-            "kernels",
-            "icons",
-            iconFile,
-        ]);
-        const supportedLanguages = (controllerInfo.supportedLanguages || [])
-            .map(l => `'${l}'`)
-            .join(',');
-        let gettingStarted: string = '';
-        if (controllerInfo.gettingStartedPath !== undefined) {
-            try {
-                const content = fs.readFileSync(
-                    path.join(__filename, '..', '..', 'docs', 'kernels', controllerInfo.gettingStartedPath));
-                gettingStarted = content.toString().replace(/[\r\n]+/g, '\\n\\n');
-            } catch (e: any) {
-                vscode.window.showErrorMessage(`Could not read getting-started data:\n${e}`);
-            }
-        }
-        const contributors = controllerInfo.contributors?.map(c => 
-            `{
-                name:  "${c.name}",
-                url:   ${c.url === undefined ? undefined : '"' + c.url + '"'},
-                email: ${c.email === undefined ? undefined : '"' + c.email + '"'}
-            }`);
-        controllerInfo.cellMetadata?.forEach(m => m.description = escapeString(m.description));
-        const cellMetadata = controllerInfo.cellMetadata?.map(m =>
-            `{
-                key:         "${m.key}",
-                default:     ${m.default === undefined ? undefined : '"' + m.default + '"'},
-                description: ${m.description === undefined ? undefined : '"' + m.description + '"'},
-                enum:        ${m.enum === undefined ? undefined : "[" + m.enum.map(e => '"' + e + '"').join(',') + "]"},
-                required:    ${m.required === undefined ? undefined : m.required}
-            }`);
-        controllerInfo.notebookMetadata?.forEach(m => m.description = escapeString(m.description));
-        const notebookMetadata = controllerInfo.notebookMetadata?.map(m => 
-            `{
-                key:         "${m.key}",
-                default:     ${m.default === undefined ? undefined : '"' + m.default + '"'},
-                description: ${m.description === undefined ? undefined : '"' + m.description + '"'},
-                enum:        ${m.enum === undefined ? undefined : "[" + m.enum.map(e => '"' + e + '"').join(',') + "]"},
-                required:    ${m.required === undefined ? undefined : m.required}
-            }`);
-        
-        let activeTabId: string = 'tab-description';
-        if (gettingStarted !== '') {
-            activeTabId = 'tab-getting-started';
-        } else if (contributors !== undefined && contributors.length) {
-            activeTabId = 'tab-contributors';
-        }*/
 
         return `
 <!DOCTYPE html>
@@ -140,7 +87,27 @@ export class KernelCompatibilityView {
             }
 
             .hidden {
-                display: none;
+                display: none !important;
+            }
+
+            vscode-data-grid-row {
+                align-items: center;
+            }
+
+            .codicon-check, .codicon-error, .codicon-warning, .codeicon-debug-pause {
+                font: 22px / 1 codicon !important;
+            }
+
+            .codicon-check {
+                color: #00e676;
+            }
+
+            .codicon-error {
+                color: #ff1744;
+            }
+
+            .codicon-warning {
+                color: #ffc400;
             }
         </style>
     </head>
@@ -151,111 +118,169 @@ export class KernelCompatibilityView {
             <vscode-data-grid
                 id="req-cell-grid"
                 generate-header="none"
-                grid-template-columns="0.1fr 0.4fr 2fr 5fr">
+                grid-template-columns="0.1fr 0.1fr 2fr 5fr">
             </vscode-data-grid>
         </section>
 
         <script>
-            const vscode = acquireVsCodeApi();
+            class TaskExecutor {
 
-            window.addEventListener('message', event => {
-                const msg = event.data;
-                const buttons = [...document.querySelectorAll('vscode-button.action-btn')];
-                const btn = buttons.find(b => b.getAttribute('task-index') == msg.index);
-                
-                if (btn) {
-                    const responseEvent = new CustomEvent('response', { detail: msg });
-                    btn.dispatchEvent(responseEvent);
+                constructor() {
+                    this.vscode = acquireVsCodeApi();
+
+                    window.addEventListener('message', event => {
+                        const msg = event.data;
+                        const task = tasks.find(t => t.index == msg.index);
+                        if (task) {
+                            task.executionCallback(msg.result);
+                        }
+                    });
                 }
-            });
 
-            function sendRunTaskMsg(taskIndex) {
-                vscode.postMessage({
-                    type:  'run',
-                    index: taskIndex,
-                });
+                sendState(index, type) {
+                    this.vscode.postMessage({
+                        type:  type,
+                        index: index
+                    });
+                }
             }
 
-            function runAllTasks() {
-                const buttons = document.querySelectorAll('vscode-button.action-btn');
-                buttons.forEach(b => b.click());
+            const taskExecutor = new TaskExecutor();
+        </script>
+
+        <script>
+            class RequirementTask {
+
+                constructor(name, index) {
+                    this.name = name;
+                    this.index = index;
+                    this.state = '';
+                    this._nodesConstructor();
+                }
+
+                render(parent) {
+                    parent.appendChild(this._nodes.row);
+                }
+
+                executionCallback(response) {
+                    this._setActionState('stopped');
+
+                    if (response) {
+                        this._nodes.reqResponse.innerHTML =  marked.parse(response.msgMd || '');
+                    }
+                    this._nodes.statusIcon.classList.add('codicon',
+                        RequirementTask._getResponseIcon(response.status));
+                    this._nodes.statusIcon.classList.remove('hidden');
+                }
+
+                execute() {
+                    this._setActionState('running');
+                    taskExecutor.sendState(this.index, 'run');
+                }
+
+                static _getResponseIcon(status) {
+                    switch (status) {
+                        case 'success':
+                            return 'codicon-check';
+                        case 'fail':
+                            return 'codicon-error';
+                        case 'warn':
+                            return 'codicon-warning';
+                    }
+
+                    return 'codeicon-debug-pause';
+                }
+
+                _actionCallback() {
+                    this._toggleState();
+                    taskExecutor.sendState(this.index, this.state === 'running' ? 'run' : 'stop');
+                }
+
+                _toggleState() {
+                    const state = this.state === 'running' ? 'stopped' : 'running';
+                    this._setActionState(state);
+                }
+
+                _setActionState(state) {
+                    this.state = state;
+
+                    switch (this.state) {
+                        case 'running':
+                            this._nodes.actionBtn.title = 'Stop checking';
+                            this._nodes.actionBtnIcon.classList.remove('codicon-redo');
+                            this._nodes.actionBtnIcon.classList.add('codicon-debug-stop');
+                            this._nodes.statusIcon.classList.add('hidden');
+                            this._nodes.progressRing.classList.remove('hidden');
+                            this._nodes.reqResponse.innerHTML = '';
+                            break;
+                        case 'stopped':
+                            this._nodes.actionBtn.title = 'Repeat check';
+                            this._nodes.actionBtnIcon.classList.remove('codicon-debug-stop');
+                            this._nodes.actionBtnIcon.classList.add('codicon-redo');
+                            this._nodes.progressRing.classList.add('hidden');
+                            this._nodes.statusIcon.classList.remove(...this._nodes.statusIcon.classList);
+                            break;
+                    }
+                }
+
+                _nodesConstructor() {
+                    this._nodes = {};
+
+                    // data grid row.
+                    this._nodes.row = document.createElement('vscode-data-grid-row');
+
+                    // action button cell.
+                    const actionBtnCell = document.createElement('vscode-data-grid-cell');
+                    actionBtnCell.setAttribute('grid-column', '1');
+                    this._nodes.actionBtn = document.createElement('vscode-button');
+                    this._nodes.actionBtn.setAttribute('appearance', 'icon');
+                    this._nodes.actionBtn.addEventListener('click', () => this._actionCallback());
+                    this._nodes.actionBtnIcon = document.createElement('span');
+                    this._nodes.actionBtnIcon.classList.add('codicon');
+                    this._nodes.actionBtn.appendChild(this._nodes.actionBtnIcon);
+                    actionBtnCell.appendChild(this._nodes.actionBtn);
+
+                    // progress ring and status cell.
+                    this._nodes.ringCell = document.createElement('vscode-data-grid-cell');
+                    this._nodes.ringCell.setAttribute('grid-column', '2');
+                    this._nodes.progressRing = document.createElement('vscode-progress-ring');
+                    this._nodes.progressRing.classList.add('hidden');
+                    this._nodes.statusIcon = document.createElement('span');
+                    this._nodes.statusIcon.classList.add('hidden');
+                    this._nodes.ringCell.append(
+                        this._nodes.progressRing,
+                        this._nodes.statusIcon,
+                    );
+
+                    // requirement name cell.
+                    const reqNameCell = document.createElement('vscode-data-grid-cell');
+                    reqNameCell.setAttribute('grid-column', '3');
+                    reqNameCell.innerText = this.name;
+
+                    // requirement response cell.
+                    const reqResponseCell = document.createElement('vscode-data-grid-cell');
+                    reqResponseCell.setAttribute('grid-column', '4');
+                    this._nodes.reqResponse = document.createElement('div');
+                    reqResponseCell.appendChild(this._nodes.reqResponse);
+
+                    this._nodes.row.append(
+                        actionBtnCell,
+                        this._nodes.ringCell,
+                        reqNameCell,
+                        reqResponseCell,
+                    );
+                }
             }
         </script>
 
         <script>
             const reqGrid = document.getElementById('req-cell-grid');
-            const tasks = [${tasks}];
-            tasks.forEach((t, index) => {
-                const row = document.createElement('vscode-data-grid-row');
-
-                // action button cell.
-                const actionBtnCell = document.createElement('vscode-data-grid-cell');
-                actionBtnCell.setAttribute('grid-column', '1');
-                const actionBtn = document.createElement('vscode-button');
-                actionBtn.classList.add('hidden', 'action-btn');
-                actionBtn.setAttribute('appearance', 'icon');
-                actionBtn.setAttribute('state', 'run');
-                actionBtn.setAttribute('task-index', index);
-                const actionBtnIcon = document.createElement('span');
-                actionBtnIcon.classList.add('codicon');
-                actionBtn.addEventListener('click', () => {
-                    actionBtn.classList.remove('hidden');
-                    const state = actionBtn.getAttribute('state');
-                    switch (state) {
-                        case 'run':
-                            actionBtn.setAttribute('state', 'stop');
-                            actionBtn.title = 'Stop checking';
-                            actionBtnIcon.classList.remove('codicon-redo');
-                            actionBtnIcon.classList.add('codicon-debug-stop');
-                            progressRing.classList.remove('hidden');
-                            reqResponse.innerHTML = '';
-                            sendRunTaskMsg(index);
-                            break;
-                        case 'stop':
-                            actionBtn.setAttribute('state', 'run');
-                            actionBtn.title = 'Repeat check';
-                            actionBtnIcon.classList.remove('codicon-debug-stop');
-                            actionBtnIcon.classList.add('codicon-redo');
-                            progressRing.classList.add('hidden');
-                            break;
-                    }
-                });
-                actionBtn.addEventListener('response', (e) => {
-                    const result = e.detail.result;
-                    if (result) {
-                        actionBtn.setAttribute('state', 'stop');
-                        reqResponse.innerHTML =  marked.parse(result.msgMd || '');
-                        reqResponse.classList.remove('hidden');
-                        progressRing.classList.add('hidden');
-                    }
-                }, false);
-                actionBtn.appendChild(actionBtnIcon);
-                actionBtnCell.appendChild(actionBtn);
-                
-                // progress ring cell.
-                const ringCell = document.createElement('vscode-data-grid-cell');
-                ringCell.setAttribute('grid-column', '2');
-                const progressRing = document.createElement('vscode-progress-ring');
-                progressRing.classList.add('hidden');
-                ringCell.appendChild(progressRing);
-
-                // requirement name cell.
-                const reqNameCell = document.createElement('vscode-data-grid-cell');
-                reqNameCell.setAttribute('grid-column', '3');
-                reqNameCell.innerText = t;
-
-                // requirement response cell.
-                const reqResponseCell = document.createElement('vscode-data-grid-cell');
-                reqResponseCell.setAttribute('grid-column', '4');
-                const reqResponse = document.createElement('div');
-                reqResponse.classList.add('hidden');
-                reqResponseCell.appendChild(reqResponse);
-
-                row.append(actionBtnCell, ringCell, reqNameCell, reqResponseCell);
-                reqGrid.appendChild(row);
+            const tasks = [${tasks}].map((t, index) => {
+                const task = new RequirementTask(t, index);
+                task.render(reqGrid);
+                task.execute();
+                return task;
             });
-
-            runAllTasks();
         </script>
     </body>
 </html>`;
