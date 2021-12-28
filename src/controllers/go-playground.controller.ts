@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import * as vscode from 'vscode';
 import { URLSearchParams } from 'url';
 import fetch, { RequestInit } from 'node-fetch';
 import { AbortController } from 'node-abort-controller';
@@ -11,7 +12,14 @@ import {
     OnControllerInfo
 } from '../core/controller';
 import { GoTestResolver } from './go.controller';
-import { KnownLanguageIds, MimeTypes } from '../core/types';
+import {
+    KernelCompatibilityChecker,
+    KernelRequirement,
+    KernelRequirementCheckResult,
+    KernelRequirementCheckStatus,
+    KnownLanguageIds,
+    MimeTypes
+} from '../core/types';
 
 enum PlaygroundEventKind {
     stdoutKind = 'stdout',
@@ -49,6 +57,10 @@ export class GoPlaygroundController extends NotebookController implements OnCont
             GoPlaygroundController._notebookType,
             GoPlaygroundController._label
         );
+    }
+
+    public static get controllerId() : string {
+        return GoPlaygroundController._controllerId;
     }
 
     public supportedLanguages(): string[] | undefined {
@@ -215,5 +227,49 @@ export class GoPlaygroundController extends NotebookController implements OnCont
                 resp.TestsFailed || 0
             ).resolve()
         ], MimeTypes.stdTest);
+    }
+}
+
+export class GoPlaygroundControllerKernelChecker implements KernelCompatibilityChecker {
+    private static readonly _goPlaygroundHZURL: string = 'https://play.golang.org/_ah/health';
+    private static readonly _goPlaygroundHZStatusOK: string = 'ok';
+
+    requirements(): KernelRequirement[] {
+        return [
+            {
+                name: `Check ${GoPlaygroundControllerKernelChecker._goPlaygroundHZURL} website availability`,
+                check: async (cToken: vscode.CancellationToken): Promise<KernelRequirementCheckResult | undefined> => {
+                    const fetchAbortController = new AbortController();
+                    cToken.onCancellationRequested(() => fetchAbortController.abort());
+                    const req : RequestInit = {
+                        signal:  fetchAbortController.signal
+                    };
+
+                    try {
+                        const response = await fetch(GoPlaygroundControllerKernelChecker._goPlaygroundHZURL, req);
+                        const statusMsg = await response.text();
+                        if (statusMsg !== GoPlaygroundControllerKernelChecker._goPlaygroundHZStatusOK) {
+                            throw new Error(`expected status: ${GoPlaygroundControllerKernelChecker._goPlaygroundHZStatusOK}, actual: ${statusMsg}`);
+                        }
+                    } catch (e: any) {
+                        if (e.type === 'aborted') {
+                            return {
+                                status: KernelRequirementCheckStatus.warn,
+                                msgMd:  `## Aborted`,
+                            };
+                        }
+
+                        return {
+                            status: KernelRequirementCheckStatus.fail,
+                            msgMd:  `## Error: ${e.message}`,
+                        };
+                    }
+
+                    return {
+                        status: KernelRequirementCheckStatus.success
+                    };
+                }
+            }
+        ];
     }
 }

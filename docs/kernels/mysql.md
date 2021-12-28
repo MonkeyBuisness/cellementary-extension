@@ -11,7 +11,7 @@ commands on your local machine.
 
 ## Download and install MySQL
 
-Download and install SQLite tool on your machine with the steps described here:
+Download and install MySQL tool on your machine with the steps described here:
 - [Windows](https://dev.mysql.com/doc/mysql-installation-excerpt/5.7/en/windows-installation.html)
 - [Linux](https://dev.mysql.com/doc/mysql-installation-excerpt/5.7/en/linux-installation.html)
 - [macOS](https://dev.mysql.com/doc/mysql-installation-excerpt/5.7/en/macos-installation.html)

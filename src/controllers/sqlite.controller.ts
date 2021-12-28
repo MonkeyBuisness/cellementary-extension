@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import * as fs from 'fs';
 import { tmpdir } from 'os';
 import * as path from 'path';
@@ -10,7 +11,7 @@ import {
     NotebookController,
     OnControllerInfo
 } from "../core/controller";
-import { KnownLanguageIds, MimeTypes } from '../core/types';
+import { KernelCompatibilityChecker, KernelRequirement, KernelRequirementCheckResult, KernelRequirementCheckStatus, KnownLanguageIds, MimeTypes } from '../core/types';
 import { Executor } from '../utils/executor.util';
 import { JSONSet, SQLTableResult } from '../renderers/sql-table-renderer/types';
 
@@ -31,6 +32,10 @@ export class SQLiteController extends NotebookController implements OnController
             SQLiteController._notebookType,
             SQLiteController._label
         );
+    }
+
+    public static get controllerId() : string {
+        return SQLiteController._controllerId;
     }
 
     public supportedLanguages(): string[] | undefined {
@@ -195,4 +200,91 @@ export class SQLiteController extends NotebookController implements OnController
 interface ExecutionResult {
     canceled: boolean;
     err?:     Error;
+}
+
+export class SQLiteControllerKernelChecker implements KernelCompatibilityChecker {
+    private static readonly _supportedOS: string[] = ['linux', 'win32', 'darwin'];
+
+    requirements(): KernelRequirement[] {
+        return [
+            {
+                name: 'Check Operating System',
+                check: async (_: vscode.CancellationToken): Promise<KernelRequirementCheckResult | undefined> => {
+                    const isSupported = SQLiteControllerKernelChecker._supportedOS.includes(process.platform);
+
+                    if (!isSupported) {
+                        return {
+                            status: KernelRequirementCheckStatus.warn,
+                            msgMd:  `\`${process.platform}\` may not be supported by this extension`,
+                        };
+                    }
+
+                    return {
+                        status: KernelRequirementCheckStatus.success,
+                        msgMd:  `### \`${process.platform}\` detected!`
+                    };
+                },
+            },
+            {
+                name: 'Check sqlite availability',
+                check: async (cToken: vscode.CancellationToken): Promise<KernelRequirementCheckResult | undefined> => {
+                    const executor = new Executor('sqlite3 --version');
+                    cToken.onCancellationRequested(() => {
+                        executor.cancel();
+                    });
+                    let canceled: boolean = false;
+                    let errs: string = '';
+                    let output: string = '';
+                    await executor.execute({
+                        canceled: () => {
+                            canceled = true;
+                        },
+                        error: (err: Error) => {                
+                            errs = errs.concat(err.message);
+                        },
+                        output: (out: string) => {
+                            output = output.concat(out);
+                        },
+                    });
+
+                    if (canceled) {
+                        return {
+                            status: KernelRequirementCheckStatus.warn,
+                            msgMd:  '# Canceled',
+                        };
+                    }
+
+                    if (errs.length) {
+                        return {
+                            status: KernelRequirementCheckStatus.fail,
+                            msgMd:  `
+Error to execute \`sqlite3 --version\` command:
+
+\`\`\`
+${errs}
+\`\`\`
+
+### Possible reasons
+
+- [SQLite tool](https://www.sqlite.org/download.html) is not installed on your computer.
+> Download and install SQLite tool on your machine with the steps described [here](https://www.servermania.com/kb/articles/install-sqlite/).
+- Extension cannot find \`sqlite3\` executable in your system.
+`,
+                        };
+                    }
+
+                    const outChunks = output.split(' ');
+                    const version = outChunks.length > 1 ? `v${outChunks[0]}` : output;
+
+                    return {
+                        status: KernelRequirementCheckStatus.success,
+                        msgMd: `
+# Success
+
+### Found SQLite: ${version}`
+                    };
+                }
+            }
+        ];
+    }
 }

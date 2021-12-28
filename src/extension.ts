@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+
 import { CheckKernelСompatibilityCmd } from './commands/check-kernel-compatibility.command';
 import { CommandManager } from './commands/command-handler';
 import { DisableKernelCmd } from './commands/disable-kernel.command';
@@ -10,15 +11,15 @@ import { GroupKernelsByEnableStateCmd } from './commands/group-kernels-by-state.
 import { GroupKernelsByLanguageCmd } from './commands/group-kernels-by_lang.command';
 import { ShowKernelInfoCmd } from './commands/show-kernel-info.command';
 import { UngroupKernelsCmd } from './commands/ungroup-kernels.command';
-import { GoPlaygroundController } from './controllers/go-playground.controller';
-import { GoController } from './controllers/go.controller';
+import { GoPlaygroundController, GoPlaygroundControllerKernelChecker } from './controllers/go-playground.controller';
+import { GoController, GoControllerKernelChecker } from './controllers/go.controller';
 import { HTMLController } from './controllers/html.controller';
-import { JavaOneController } from './controllers/java-one.controller';
+import { JavaOneController, JavaOneControllerKernelChecker } from './controllers/java-one.controller';
 import { JavaController, JavaControllerKernelChecker } from './controllers/java.controller';
 import { JSONController } from './controllers/json.controller';
 import { MarkdownController } from './controllers/markdown.controller';
-import { MySQLController } from './controllers/mysql.controller';
-import { SQLiteController } from './controllers/sqlite.controller';
+import { MySQLController, MySQLControllerKernelChecker } from './controllers/mysql.controller';
+import { SQLiteController, SQLiteControllerKernelChecker } from './controllers/sqlite.controller';
 import { NotebookManager } from './core/manager';
 import { NotebookSerializer } from './core/serializer';
 import { ConfigurationService } from './services/configuration.service';
@@ -139,4 +140,14 @@ function registerServices(context: vscode.ExtensionContext) {
 function registerKernelCompatibilityCheckers(notebookManager: NotebookManager) {
     notebookManager.registerKernelCompatibilityChecker(JavaController.controllerId,
         new JavaControllerKernelChecker());
+    notebookManager.registerKernelCompatibilityChecker(GoPlaygroundController.controllerId,
+        new GoPlaygroundControllerKernelChecker());
+    notebookManager.registerKernelCompatibilityChecker(JavaOneController.controllerId,
+        new JavaOneControllerKernelChecker());
+    notebookManager.registerKernelCompatibilityChecker(GoController.controllerId,
+        new GoControllerKernelChecker());
+    notebookManager.registerKernelCompatibilityChecker(MySQLController.controllerId,
+        new MySQLControllerKernelChecker());
+    notebookManager.registerKernelCompatibilityChecker(SQLiteController.controllerId,
+        new SQLiteControllerKernelChecker());
 }

@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as UniqueFileName from 'uniquefilename';
 import { tmpdir } from 'os';
@@ -16,7 +17,7 @@ import {
     TestResult,
     TestStatus
 } from "../renderers/std-test-renderer/types";
-import { KnownLanguageIds, MimeTypes } from '../core/types';
+import { KernelCompatibilityChecker, KernelRequirement, KernelRequirementCheckResult, KernelRequirementCheckStatus, KnownLanguageIds, MimeTypes } from '../core/types';
 import { Executor } from '../utils/executor.util';
 
 // GoController represents class implementation for running go code locally.
@@ -37,6 +38,10 @@ export class GoController extends NotebookController implements OnControllerInfo
             GoController._notebookType,
             GoController._label
         );
+    }
+
+    public static get controllerId() : string {
+        return GoController._controllerId;
     }
 
     public supportedLanguages(): string[] | undefined {
@@ -272,5 +277,92 @@ export class GoTestResolver {
         }
 
         return testResult;
+    }
+}
+
+export class GoControllerKernelChecker implements KernelCompatibilityChecker {
+    private static readonly _supportedOS: string[] = ['linux', 'win32', 'darwin'];
+
+    requirements(): KernelRequirement[] {
+        return [
+            {
+                name: 'Check Operating System',
+                check: async (_: vscode.CancellationToken): Promise<KernelRequirementCheckResult | undefined> => {
+                    const isSupported = GoControllerKernelChecker._supportedOS.includes(process.platform);
+
+                    if (!isSupported) {
+                        return {
+                            status: KernelRequirementCheckStatus.warn,
+                            msgMd:  `\`${process.platform}\` may not be supported by this extension`,
+                        };
+                    }
+
+                    return {
+                        status: KernelRequirementCheckStatus.success,
+                        msgMd:  `### \`${process.platform}\` detected!`
+                    };
+                },
+            },
+            {
+                name: 'Check Go compiler availability',
+                check: async (cToken: vscode.CancellationToken): Promise<KernelRequirementCheckResult | undefined> => {
+                    const executor = new Executor('go version');
+                    cToken.onCancellationRequested(() => {
+                        executor.cancel();
+                    });
+                    let canceled: boolean = false;
+                    let errs: string = '';
+                    let output: string = '';
+                    await executor.execute({
+                        canceled: () => {
+                            canceled = true;
+                        },
+                        error: (err: Error) => {                
+                            errs = errs.concat(err.message);
+                        },
+                        output: (out: string) => {
+                            output = output.concat(out);
+                        },
+                    });
+
+                    if (canceled) {
+                        return {
+                            status: KernelRequirementCheckStatus.warn,
+                            msgMd:  '# Canceled',
+                        };
+                    }
+
+                    if (errs.length) {
+                        return {
+                            status: KernelRequirementCheckStatus.fail,
+                            msgMd:  `
+Error to execute \`go version\` command:
+
+\`\`\`
+${errs}
+\`\`\`
+
+### Possible reasons
+
+- [GO compiler](https://go.dev/dl/) is not installed on your computer.
+- Extension cannot find \`go\` executable in your system.
+> Steps to set *PATH* environment variable described [here](https://go.dev/doc/gopath_code).
+`,
+                        };
+                    }
+
+                    const outChunks = output.split(' ');
+                    const version = outChunks.length > 2 ? `${outChunks[2]}` : output;
+
+                    return {
+                        status: KernelRequirementCheckStatus.success,
+                        msgMd: `
+# Success
+
+### Found Go compiler: ${version}`
+                    };
+                }
+            }
+        ];
     }
 }

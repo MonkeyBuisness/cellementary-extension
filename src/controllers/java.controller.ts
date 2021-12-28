@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import { platform, tmpdir } from 'os';
+import { tmpdir } from 'os';
 import { v4 as uuidv4 } from 'uuid';
 
 import {

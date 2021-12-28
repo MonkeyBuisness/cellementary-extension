@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import * as vscode from 'vscode';
 const xml2js = require('xml2js');
 
 import {
@@ -8,7 +9,7 @@ import {
     NotebookController,
     OnControllerInfo
 } from "../core/controller";
-import { KnownLanguageIds, MimeTypes } from '../core/types';
+import { KernelCompatibilityChecker, KernelRequirement, KernelRequirementCheckResult, KernelRequirementCheckStatus, KnownLanguageIds, MimeTypes } from '../core/types';
 import { Executor } from '../utils/executor.util';
 import { JSONSet, SQLTableResult } from '../renderers/sql-table-renderer/types';
 
@@ -37,6 +38,10 @@ export class MySQLController extends NotebookController implements OnControllerI
             MySQLController._notebookType,
             MySQLController._label
         );
+    }
+
+    public static get controllerId() : string {
+        return MySQLController._controllerId;
     }
 
     public supportedLanguages(): string[] | undefined {
@@ -252,4 +257,95 @@ export class MySQLController extends NotebookController implements OnControllerI
 interface ExecutionResult {
     canceled: boolean;
     err?:     Error;
+}
+
+export class MySQLControllerKernelChecker implements KernelCompatibilityChecker {
+    private static readonly _supportedOS: string[] = ['linux', 'win32', 'darwin'];
+
+    requirements(): KernelRequirement[] {
+        return [
+            {
+                name: 'Check Operating System',
+                check: async (_: vscode.CancellationToken): Promise<KernelRequirementCheckResult | undefined> => {
+                    const isSupported = MySQLControllerKernelChecker._supportedOS.includes(process.platform);
+
+                    if (!isSupported) {
+                        return {
+                            status: KernelRequirementCheckStatus.warn,
+                            msgMd:  `\`${process.platform}\` may not be supported by this extension`,
+                        };
+                    }
+
+                    return {
+                        status: KernelRequirementCheckStatus.success,
+                        msgMd:  `### \`${process.platform}\` detected!`
+                    };
+                },
+            },
+            {
+                name: 'Check mysql availability',
+                check: async (cToken: vscode.CancellationToken): Promise<KernelRequirementCheckResult | undefined> => {
+                    const executor = new Executor('mysql --version');
+                    cToken.onCancellationRequested(() => {
+                        executor.cancel();
+                    });
+                    let canceled: boolean = false;
+                    let errs: string = '';
+                    let output: string = '';
+                    await executor.execute({
+                        canceled: () => {
+                            canceled = true;
+                        },
+                        error: (err: Error) => {                
+                            errs = errs.concat(err.message);
+                        },
+                        output: (out: string) => {
+                            output = output.concat(out);
+                        },
+                    });
+
+                    if (canceled) {
+                        return {
+                            status: KernelRequirementCheckStatus.warn,
+                            msgMd:  '# Canceled',
+                        };
+                    }
+
+                    if (errs.length) {
+                        return {
+                            status: KernelRequirementCheckStatus.fail,
+                            msgMd:  `
+Error to execute \`mysql --version\` command:
+
+\`\`\`
+${errs}
+\`\`\`
+
+### Possible reasons
+
+- [MySQL Server](https://dev.mysql.com/downloads/mysql/) is not installed on your computer.
+> Download and install MySQL tool on your machine with the steps described here:
+> - [Windows](https://dev.mysql.com/doc/mysql-installation-excerpt/5.7/en/windows-installation.html)
+> - [Linux](https://dev.mysql.com/doc/mysql-installation-excerpt/5.7/en/linux-installation.html)
+> - [macOS](https://dev.mysql.com/doc/mysql-installation-excerpt/5.7/en/macos-installation.html)
+- Extension cannot find \`mysql\` executable in your system.
+> Steps to set *PATH* environment variable described [here](https://dev.mysql.com/doc/mysql-windows-excerpt/5.7/en/mysql-installation-windows-path.html).
+`,
+                        };
+                    }
+
+                    const outChunks = output.split(' ');
+                    const version = outChunks.length > 3 ? `v${outChunks[3]}` : output;
+
+                    return {
+                        status: KernelRequirementCheckStatus.success,
+                        msgMd: `
+# Success
+
+### Found MySQL: ${version}`
+                    };
+                }
+            }
+        ];
+    }
 }

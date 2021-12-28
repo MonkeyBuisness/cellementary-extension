@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import * as vscode from 'vscode';
 import fetch, { RequestInit } from 'node-fetch';
 import { AbortController } from 'node-abort-controller';
 
@@ -9,7 +10,7 @@ import {
     NotebookController,
     OnControllerInfo
 } from '../core/controller';
-import { KnownLanguageIds } from '../core/types';
+import { KernelCompatibilityChecker, KernelRequirement, KernelRequirementCheckResult, KernelRequirementCheckStatus, KnownLanguageIds } from '../core/types';
 
 interface JavaOneCompileResponse {
     exception?: string;
@@ -48,6 +49,10 @@ export class JavaOneController extends NotebookController implements OnControlle
             JavaOneController._notebookType,
             JavaOneController._label
         );
+    }
+
+    public static get controllerId() : string {
+        return JavaOneController._controllerId;
     }
 
     public supportedLanguages(): string[] | undefined {
@@ -164,3 +169,48 @@ export class JavaOneController extends NotebookController implements OnControlle
         return success;
     }
 }
+
+export class JavaOneControllerKernelChecker implements KernelCompatibilityChecker {
+    private static readonly _javaOneHZURL: string = 'https://onecompiler.com/api/code/';
+
+    requirements(): KernelRequirement[] {
+        return [
+            {
+                name: `Check ${JavaOneControllerKernelChecker._javaOneHZURL} website availability`,
+                check: async (cToken: vscode.CancellationToken): Promise<KernelRequirementCheckResult | undefined> => {
+                    const fetchAbortController = new AbortController();
+                    cToken.onCancellationRequested(() => fetchAbortController.abort());
+                    const req : RequestInit = {
+                        signal:  fetchAbortController.signal
+                    };
+
+                    try {
+                        const response = await fetch(JavaOneControllerKernelChecker._javaOneHZURL, req);
+                        const respData = await response.json();
+
+                        if (!respData.results?.length) {
+                            throw new Error('unexpected response');
+                        }
+                    } catch (e: any) {
+                        if (e.type === 'aborted') {
+                            return {
+                                status: KernelRequirementCheckStatus.warn,
+                                msgMd:  `## Aborted`,
+                            };
+                        }
+
+                        return {
+                            status: KernelRequirementCheckStatus.fail,
+                            msgMd:  `## Error: ${e.message}`,
+                        };
+                    }
+                    
+                    return {
+                        status: KernelRequirementCheckStatus.success
+                    };
+                }
+            }
+        ];
+    }
+}
+
